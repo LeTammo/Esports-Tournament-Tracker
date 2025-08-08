@@ -215,11 +215,14 @@ app.get('/', async (req, res) => {
             for (const tier of tiers) {
                 tierFilters[tier.id] = tier.filter_json ? JSON.parse(tier.filter_json) : { include: [], exclude: [] };
             }
-            // Apply each tournament's tier's filter
-            tournaments = tournaments.map(t => {
+            // Apply each tournament's tier's filter and DROP excluded ones
+            const filtered = [];
+            for (const t of tournaments) {
                 const f = tierFilters[t.tier_id] || { include: [], exclude: [] };
-                return filterUtils.filterTournaments([t], f)[0];
-            });
+                const result = filterUtils.filterTournaments([t], f)[0];
+                if (result && result.included !== false) filtered.push(result);
+            }
+            tournaments = filtered;
         }
     } else {
         // No game selected: show all tiers and all tournaments for current year
