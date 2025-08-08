@@ -32,10 +32,12 @@ html,body{
   border-bottom:1px solid rgba(255,255,255,.06);
   backdrop-filter:saturate(140%) blur(6px);
 }
+.modern-nav{position:sticky;top:0;z-index:1040}
 .navbar .navbar-brand{
   font-weight:700;
   letter-spacing:.02em;
 }
+.brand-accent{background:linear-gradient(90deg,var(--brand),var(--brand-2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .navbar .nav-link{
   color:var(--fg-1)!important;
   border-radius:8px;
@@ -45,6 +47,8 @@ html,body{
   color:var(--fg-0)!important;
   background:rgba(125,211,252,.1);
 }
+.nav-games{gap:.25rem}
+.nav-link.game-link{padding:.35rem .7rem}
 
 /* Pills / Tabs */
 .nav-pills .nav-link{
@@ -117,6 +121,22 @@ html,body{
 }
 .list-group-item:hover{
   background:rgba(125,211,252,.04);
+}
+
+/* Clean tournament list */
+.clean-list{border:1px solid rgba(255,255,255,.06);border-radius:16px;overflow:hidden}
+.tournament-item{padding:.9rem 1rem}
+.tournament-item + .tournament-item{border-top:1px solid #1a2330}
+.tournament-item .ti-row{gap:1rem}
+.tournament-item .ti-name{font-weight:600;color:var(--fg-0);line-height:1.3}
+.tournament-item .ti-meta{color:var(--fg-1);font-size:.875rem;margin-top:.1rem}
+.tournament-item .ti-meta .sep{opacity:.5;margin:0 .35rem}
+.tournament-item .ti-aside .badge{font-weight:600}
+.tournament-item:hover{background:rgba(125,211,252,.05)}
+
+@media (max-width: 576px){
+  .tournament-item{padding:.85rem .8rem}
+  .tournament-item .ti-aside{flex-wrap:wrap;justify-content:flex-end}
 }
 
 /* Badges */
