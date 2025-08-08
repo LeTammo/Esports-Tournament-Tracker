@@ -451,6 +451,7 @@ app.get('/', async (req, res) => {
         upcomingTournaments: upcoming,
         pastTournaments: past,
         nextTournaments: next,
+        hastTournaments: current.length > 0 || upcoming.length > 0 || past.length > 0 || next.length > 0,
         savedPages,
         selectedGame,
         selectedTier,

@@ -3,108 +3,36 @@
         <div class="section-header d-flex justify-content-between align-items-center d-none">
             <h5 class="card-title m-0">Tournaments</h5>
         </div>
-        <% const hasAny = (currentTournaments && currentTournaments.length)
-                || (upcomingTournaments && upcomingTournaments.length)
-                || (nextTournaments && nextTournaments.length)
-                || (pastTournaments && pastTournaments.length); %>
-        <% if (!hasAny) { %>
+        <% if (!hastTournaments) { %>
             <div class="text-muted">No tournaments found for this selection.</div>
         <% } else { %>
-            <% if (currentTournaments && currentTournaments.length) { %>
+            <%
+                const categoryConfigs = [
+                    { title: 'Currently live', titleClass: 'text-success', prefix: 'c', list: currentTournaments, itemExtraClass: 'highlight-current', showEta: false },
+                    { title: 'Upcoming',       titleClass: 'text-info',    prefix: 'u', list: upcomingTournaments, itemExtraClass: 'highlight-upnext', showEta: true },
+                    { title: 'Next up',        titleClass: 'text-primary', prefix: 'n', list: nextTournaments, itemExtraClass: '', showEta: true }
+                ];
+                categoryConfigs.forEach(cfg => {
+                    const arr = cfg.list;
+                    if (arr && arr.length) { %>
                 <div class="category-block mb-3">
-                    <div class="category-title text-success">Currently live</div>
+                    <div class="category-title <%= cfg.titleClass %>"><%= cfg.title %></div>
                     <ul class="list-group clean-list" id="tournament-list">
-                        <% currentTournaments.forEach((t, idx) => { %>
-                            <li class="list-group-item tournament-item highlight-current
-                                <%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>"
-                                data-included="<%= t.included %>" data-idx="c-<%= idx %>">
-                                <div class="ti-row d-flex align-items-center">
-                                    <div class="ti-main flex-grow-1">
-                                        <div class="ti-name">
-                                            <% if (!selectedGame && t.game_name) { %>
-                                                <span class="badge game-badge" style="text-transform: capitalize"><%= t.game_name %></span>
-                                            <% } %>
-                                            <a class="brand-accent" href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
-                                        </div>
-                                        <div class="ti-meta"><span><%= formatDateRange(t._sd || t.start_date, t._ed || t.end_date) %></span></div>
-                                    </div>
-                                    <div class="ti-aside d-flex flex-column align-items-end gap-2">
-                                        <span class="badge bg-info text-dark"><%= t.location %></span>
-                                        <span class="badge bg-secondary">Prize: <%= t.prize_pool %></span>
-                                    </div>
-                                </div>
-                            </li>
+                        <% arr.forEach((t, idx) => { %>
+                            <%- include('tournament_item', {
+                                t,
+                                idx,
+                                prefix: cfg.prefix,
+                                itemExtraClass: cfg.itemExtraClass,
+                                showEta: cfg.showEta,
+                                selectedGame,
+                                filters,
+                                formatDateRange
+                            }) %>
                         <% }) %>
                     </ul>
                 </div>
-            <% } %>
-            <% if (upcomingTournaments && upcomingTournaments.length) { %>
-                <div class="category-block mb-3">
-                    <div class="category-title text-info">Upcoming</div>
-                    <ul class="list-group clean-list" id="tournament-list">
-                        <% upcomingTournaments.forEach((t, idx) => { %>
-                            <li class="list-group-item tournament-item highlight-upnext
-                                <%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>"
-                                data-included="<%= t.included %>" data-idx="u-<%= idx %>">
-                                <div class="ti-row d-flex align-items-center">
-                                    <div class="ti-main flex-grow-1">
-                                        <div class="ti-name">
-                                            <% if (!selectedGame && t.game_name) { %>
-                                                <span class="badge game-badge" style="text-transform: capitalize"><%= t.game_name %></span>
-                                            <% } %>
-                                            <a class="brand-accent" href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
-                                        </div>
-                                        <div class="ti-meta">
-                                            <% if (t.eta) { %>
-                                                <span class="badge bg-info text-dark"><%= t.eta %></span>
-                                            <% } %>
-                                            <span><%= formatDateRange(t._sd || t.start_date, t._ed || t.end_date) %></span>
-                                        </div>
-                                    </div>
-                                    <div class="ti-aside d-flex flex-column align-items-end gap-2">
-                                        <span class="badge bg-secondary"><%= t.location %></span>
-                                        <span class="badge eta-badge">Prize: <%= t.prize_pool %></span>
-                                    </div>
-                                </div>
-                            </li>
-                        <% }) %>
-                    </ul>
-                </div>
-            <% } %>
-
-            <% if (nextTournaments && nextTournaments.length) { %>
-                <div class="category-block mb-3">
-                    <div class="category-title text-primary">Next up</div>
-                    <ul class="list-group clean-list" id="tournament-list">
-                        <% nextTournaments.forEach((t, idx) => { %>
-                            <li class="list-group-item tournament-item
-                                <%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>"
-                                data-included="<%= t.included %>" data-idx="n-<%= idx %>">
-                                <div class="ti-row d-flex align-items-center">
-                                    <div class="ti-main flex-grow-1">
-                                        <div class="ti-name">
-                                            <% if (!selectedGame && t.game_name) { %>
-                                                <span class="badge game-badge" style="text-transform: capitalize"><%= t.game_name %></span>
-                                            <% } %>
-                                            <a class="brand-accent" href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
-                                        </div>
-                                        <div class="ti-meta">
-                                            <% if (t.eta) { %>
-                                                <span class="badge bg-info text-dark"><%= t.eta %></span>
-                                            <% } %>
-                                            <span><%= formatDateRange(t._sd || t.start_date, t._ed || t.end_date) %></span>
-                                        </div>
-                                    </div>
-                                    <div class="ti-aside d-flex flex-column align-items-end gap-2">
-                                        <span class="badge bg-secondary"><%= t.location %></span>
-                                        <span class="badge eta-badge">Prize: <%= t.prize_pool %></span>
-                                    </div>
-                                </div>
-                            </li>
-                        <% }) %>
-                    </ul>
-                </div>
-            <% } %>
+            <% } }); %>
 
             <% if (pastTournaments && pastTournaments.length) { %>
                 <div class="category-block">
@@ -120,27 +48,16 @@
                     </div>
                     <ul class="list-group clean-list d-none" id="past-list">
                         <% pastTournaments.forEach((t, idx) => { %>
-                            <li class="list-group-item tournament-item past-item
-                                <%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>"
-                                data-included="<%= t.included %>" data-idx="p-<%= idx %>">
-                                <div class="ti-row d-flex align-items-center">
-                                    <div class="ti-main flex-grow-1">
-                                        <div class="ti-name">
-                                            <% if (!selectedGame && t.game_name) { %>
-                                                <span class="badge game-badge" style="text-transform: capitalize"><%= t.game_name %></span>
-                                            <% } %>
-                                            <a class="brand-accent" href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
-                                        </div>
-                                        <div class="ti-meta">
-                                            <span><%= formatDateRange(t._sd || t.start_date, t._ed || t.end_date) %></span>
-                                        </div>
-                                    </div>
-                                    <div class="ti-aside d-flex flex-column align-items-end gap-2">
-                                        <span class="badge bg-info text-dark"><%= t.location %></span>
-                                        <span class="badge bg-secondary">Prize: <%= t.prize_pool %></span>
-                                    </div>
-                                </div>
-                            </li>
+                            <%- include('tournament_item', {
+                                t,
+                                idx,
+                                prefix: 'p',
+                                itemExtraClass: 'past-item',
+                                showEta: false,
+                                selectedGame,
+                                filters,
+                                formatDateRange
+                            }) %>
                         <% }) %>
                     </ul>
                     <script>
