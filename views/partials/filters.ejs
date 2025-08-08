@@ -15,15 +15,15 @@
             <script>
                 function updateTournamentVisibility() {
                     var collapse = document.getElementById('filters-collapse');
-                    var list = document.getElementById('tournament-list');
+                    var list = document.querySelectorAll('.tournament-item.filtered');
                     if (!collapse || !list) return;
                     var unfolded = !collapse.classList.contains('d-none');
                     if (unfolded) {
-                        list.querySelectorAll('li').forEach(function (li) {
+                        list.forEach(function (li) {
                             li.classList.remove('d-none');
                         });
                     } else {
-                        list.querySelectorAll('li.filtered').forEach(function (li) {
+                        list.forEach(function (li) {
                             li.classList.add('d-none');
                         });
                     }
