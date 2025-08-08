@@ -1,24 +1,46 @@
 <li class="list-group-item tournament-item <%= itemExtraClass || '' %>
     <%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>"
     data-included="<%= t.included %>" data-idx="<%= prefix %>-<%= idx %>">
-    <div class="ti-row d-flex align-items-center">
-        <div class="ti-main flex-grow-1">
-            <div class="ti-name">
-                <% if (!selectedGame && t.game_name) { %>
-                    <span class="badge game-badge" style="text-transform: capitalize"><%= t.game_name %></span>
-                <% } %>
-                <a class="brand-accent" href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
+    <div class="ti-row d-flex">
+        <div class="ti-main flex-grow-1 w-100">
+            <% 
+                const escapeRegex = s => (s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const stripGameFromName = (name, game) => {
+                    if (!name) return '';
+                    if (!game) return name;
+                    const g = String(game).trim();
+                    let n = String(name).trim();
+
+                    // Remove leading "GameName - " / "GameName: " / "GameName | "
+                    const lead = new RegExp('^\\s*' + escapeRegex(g) + '\\s*[:\\-–—\\|]\\s*', 'i');
+                    n = n.replace(lead, '');
+
+                    // Also handle duplicated "GameName " prefix
+                    const dup = new RegExp('^\\s*' + escapeRegex(g) + '\\s+', 'i');
+                    n = n.replace(dup, '');
+
+                    return n;
+                };
+                const dn = stripGameFromName(t.name, t.game_name);
+                const displayName = dn && dn.trim().length ? dn : t.name;
+
+                const metaParts = [];
+                if (t.game_name) metaParts.push(t.game_name);
+                if (showEta && t.eta) metaParts.push(t.eta);
+                metaParts.push(formatDateRange(t._sd || t.start_date, t._ed || t.end_date));
+                if (t.location) metaParts.push(t.location);
+            %>
+
+            <div class="ti-name text-truncate">
+                <a class="brand-accent d-inline-block text-truncate w-100"
+                   href="<%= t.url %>" target="_blank" rel="noopener noreferrer">
+                    <%= displayName %>
+                </a>
             </div>
-            <div class="ti-meta">
-                <% if (showEta && t.eta) { %>
-                    <span class="badge bg-info text-dark"><%= t.eta %></span>
-                <% } %>
-                <span><%= formatDateRange(t._sd || t.start_date, t._ed || t.end_date) %></span>
+
+            <div class="ti-meta text-muted small">
+                <%= metaParts.join(' | ') %>
             </div>
-        </div>
-        <div class="ti-aside d-flex flex-column align-items-end gap-2">
-            <span class="badge eta-badge"><%= t.location %></span>
-            <span class="badge bg-secondary">Prize: <%= t.prize_pool %></span>
         </div>
     </div>
 </li>
