@@ -11,11 +11,9 @@
                     const g = String(game).trim();
                     let n = String(name).trim();
 
-                    // Remove leading "GameName - " / "GameName: " / "GameName | "
                     const lead = new RegExp('^\\s*' + escapeRegex(g) + '\\s*[:\\-–—\\|]\\s*', 'i');
                     n = n.replace(lead, '');
 
-                    // Also handle duplicated "GameName " prefix
                     const dup = new RegExp('^\\s*' + escapeRegex(g) + '\\s+', 'i');
                     n = n.replace(dup, '');
 
@@ -25,10 +23,6 @@
                 const displayName = dn && dn.trim().length ? dn : t.name;
 
                 const metaParts = [];
-                if (t.game_name) metaParts.push(t.game_name);
-                if (showEta && t.eta) metaParts.push(t.eta);
-                metaParts.push(formatDateRange(t._sd || t.start_date, t._ed || t.end_date));
-                if (t.location) metaParts.push(t.location);
             %>
 
             <div class="ti-name text-truncate">
@@ -39,7 +33,14 @@
             </div>
 
             <div class="ti-meta text-muted small">
-                <%= metaParts.join(' | ') %>
+                <span style="text-transform: capitalize"><%= t.game_name %></span>
+                <% if (showEta && t.eta) { %>
+                    <span>| <%= t.eta %></span>
+                <% } %>
+                <span>| <%= formatDateRange(t._sd || t.start_date, t._ed || t.end_date) %></span>
+                <% if (t.location) { %>
+                    <span>| <%= t.location %></span>
+                <% } %>
             </div>
         </div>
     </div>
