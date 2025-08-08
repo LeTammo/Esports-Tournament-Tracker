@@ -225,9 +225,20 @@ app.get('/', async (req, res) => {
             tournaments = filtered;
         }
     } else {
-        // No game selected: show all tiers and all tournaments for current year
+        // No game selected: show all tiers and all tournaments (apply per-tier filters like "All tiers")
         tiers = await db.getTiers();
-        tournaments = await db.getTournaments({ year: new Date().getFullYear() });
+        const allWithTiers = await new Promise((resolve) => {
+            db.all('SELECT t.*, r.id as tier_id, r.filter_json FROM tournaments t JOIN tiers r ON t.tier_id = r.id', [], (err, rows) => {
+                if (err || !rows) resolve([]); else resolve(rows);
+            });
+        });
+        const filtered = [];
+        for (const t of allWithTiers) {
+            const f = t.filter_json ? JSON.parse(t.filter_json) : { include: [], exclude: [] };
+            const result = filterUtils.filterTournaments([t], f)[0];
+            if (result && result.included !== false) filtered.push(result);
+        }
+        tournaments = filtered;
     }
     const savedPages = await db.getSavedPages();
     res.render('index', {

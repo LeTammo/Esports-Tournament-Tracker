@@ -1,33 +1,65 @@
 <div class="card mb-4">
   <div class="card-body">
-    <h5 class="card-title">Add Liquipedia Tournament Page</h5>
-    <form method="POST" action="/api/submit" id="submit-form">
-      <div class="input-group mb-2">
-        <input type="url" class="form-control" id="input-url" name="url" placeholder="Paste Liquipedia link..." required>
-        <button class="btn btn-primary" type="submit" id="submit-link">Submit</button>
+    <div class="d-flex align-items-center justify-content-between">
+      <h5 class="card-title m-0">Submit & Saved</h5>
+      <button class="icon-toggle" type="button" id="toggle-submit" aria-expanded="false" aria-controls="submit-collapse" title="Toggle submit" aria-label="Toggle submit">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="chevron">
+          <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <div id="submit-section">
+      <script>
+        (function(){
+          document.addEventListener('DOMContentLoaded', function(){
+            var btn = document.getElementById('toggle-submit');
+            var collapse = document.getElementById('submit-collapse');
+            if (!btn || !collapse) return;
+            btn.addEventListener('click', function(){
+              var willShow = collapse.classList.contains('d-none');
+              if (willShow){
+                collapse.classList.remove('d-none');
+                btn.setAttribute('aria-expanded','true');
+                btn.classList.add('open');
+              } else {
+                collapse.classList.add('d-none');
+                btn.setAttribute('aria-expanded','false');
+                btn.classList.remove('open');
+              }
+            });
+          });
+        })();
+      </script>
+      <div class="d-none" id="submit-collapse">
+        <div class="mb-3">
+          <form method="POST" action="/api/submit" id="submit-form">
+            <div class="input-group mb-2">
+              <input type="url" class="form-control" id="input-url" name="url" placeholder="Paste Liquipedia link..." required>
+              <button class="btn btn-primary" type="submit" id="submit-link">Submit</button>
+            </div>
+            <div id="submit-status" class="form-text"></div>
+          </form>
+        </div>
+        <div>
+          <h6 class="mb-2">Saved Pages</h6>
+          <% if (!savedPages.length) { %>
+            <div class="text-muted">No saved pages found.</div>
+          <% } else { %>
+            <ul class="list-group">
+              <% savedPages.forEach(page => { %>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><%= page.url %></span>
+                  <form method="POST" action="/api/submit" class="d-inline">
+                    <input type="hidden" name="url" value="<%= page.url %>">
+                    <button class="btn btn-sm btn-secondary">Resubmit</button>
+                  </form>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
       </div>
-      <div id="submit-status" class="form-text"></div>
-    </form>
-  </div>
-</div>
-<div class="card mb-4">
-  <div class="card-body">
-    <h5 class="card-title">Saved Pages</h5>
-    <% if (!savedPages.length) { %>
-      <div class="text-muted">No saved pages found.</div>
-    <% } else { %>
-      <ul class="list-group">
-        <% savedPages.forEach(page => { %>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span><%= page.url %></span>
-            <form method="POST" action="/api/submit" class="d-inline">
-              <input type="hidden" name="url" value="<%= page.url %>">
-              <button class="btn btn-sm btn-secondary">Resubmit</button>
-            </form>
-          </li>
-        <% }) %>
-      </ul>
-    <% } %>
+    </div>
   </div>
 </div>
 
