@@ -22,6 +22,7 @@ db.serialize(() => {
     end_date TEXT,
     prize_pool INTEGER,
     location TEXT,
+    url TEXT,
     tier_id INTEGER,
     UNIQUE(name, start_date),
     FOREIGN KEY(tier_id) REFERENCES tiers(id)

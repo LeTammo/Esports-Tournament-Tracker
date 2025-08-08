@@ -216,7 +216,10 @@ function parseTournaments(html, currentYear) {
     const tournaments = [];
     $('.gridRow').each((i, el) => {
         const row = $(el);
-        const name = row.find('.gridCell.Tournament.Header a').last().text().trim();
+    const titleCell = row.find('.gridCell.Tournament.Header');
+    const name = titleCell.find('a').last().text().trim();
+    const href = titleCell.find('a').last().attr('href');
+    const fullUrl = href ? (href.startsWith('http') ? href : `https://liquipedia.net${href}`) : null;
         const dateText = row.find('.gridCell.EventDetails.Date.Header').text().trim();
         const prize = row.find('.gridCell.EventDetails.Prize.Header').text().trim();
         const location = row.find('.gridCell.EventDetails.Location.Header').text().trim();
@@ -234,6 +237,7 @@ function parseTournaments(html, currentYear) {
             date: dateText,
             start_date: startISO || null,
             end_date: endISO || null,
+            url: fullUrl,
             prizePool: prize || 'N/A',
             location: location || 'N/A'
         });
@@ -291,8 +295,8 @@ app.post('/api/submit', async (req, res) => {
                 tournaments.forEach(t => {
                     const start = t.start_date || t.date || null;
                     const end = t.end_date || t.date || null;
-                    db.run('INSERT OR IGNORE INTO tournaments (name, start_date, end_date, prize_pool, location, tier_id) VALUES (?, ?, ?, ?, ?, ?)',
-                        [t.name, start, end, t.prizePool, t.location, tierRow.id], (err) => {
+                    db.run('INSERT OR IGNORE INTO tournaments (name, url, start_date, end_date, prize_pool, location, tier_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                        [t.name, t.url || null, start, end, t.prizePool, t.location, tierRow.id], (err) => {
                             if (err) console.error('Tournament insert error:', err, t);
                         });
                     insertCount++;

@@ -1,6 +1,6 @@
 <div class="card mb-4">
   <div class="card-body">
-    <div class="section-header d-flex justify-content-between align-items-center">
+    <div class="section-header d-flex justify-content-between align-items-center d-none">
       <h5 class="card-title m-0">Tournaments</h5>
     </div>
     <% const hasAny = (currentTournaments && currentTournaments.length) || (upNextTournaments && upNextTournaments.length) || (nextTournaments && nextTournaments.length) || (pastTournaments && pastTournaments.length); %>
@@ -15,7 +15,9 @@
               <li class="list-group-item tournament-item highlight-current<%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>" data-included="<%= t.included %>" data-idx="c-<%= idx %>">
                 <div class="ti-row d-flex align-items-center">
                   <div class="ti-main flex-grow-1">
-                    <div class="ti-name"><%= t.name %></div>
+                    <div class="ti-name">
+                        <a class="brand-accent"  href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
+                    </div>
                     <div class="ti-meta"><span><%= t.start_date %></span><span class="sep">–</span><span><%= t.end_date %></span></div>
                   </div>
                   <div class="ti-aside d-flex flex-column align-items-end gap-2">
@@ -36,7 +38,9 @@
               <li class="list-group-item tournament-item highlight-upnext<%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>" data-included="<%= t.included %>" data-idx="u-<%= idx %>">
                 <div class="ti-row d-flex align-items-center">
                   <div class="ti-main flex-grow-1">
-                    <div class="ti-name"><%= t.name %></div>
+                    <div class="ti-name">
+                        <a class="brand-accent"  href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
+                    </div>
                     <div class="ti-meta">
                       <% if (t.eta) { %><span class="badge bg-info text-dark"><%= t.eta %></span><% } %>
                       <span><%= t.start_date %></span><span class="sep">–</span><span><%= t.end_date %></span>
@@ -61,7 +65,9 @@
               <li class="list-group-item tournament-item<%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>" data-included="<%= t.included %>" data-idx="n-<%= idx %>">
                 <div class="ti-row d-flex align-items-center">
                   <div class="ti-main flex-grow-1">
-                    <div class="ti-name"><%= t.name %></div>
+                    <div class="ti-name">
+                        <a class="brand-accent"  href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
+                    </div>
                     <div class="ti-meta">
                       <% if (t.eta) { %><span class="badge bg-info text-dark"><%= t.eta %></span><% } %>
                       <span><%= t.start_date %></span><span class="sep">–</span><span><%= t.end_date %></span>
@@ -93,7 +99,9 @@
               <li class="list-group-item tournament-item past-item<%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>" data-included="<%= t.included %>" data-idx="p-<%= idx %>">
                 <div class="ti-row d-flex align-items-center">
                   <div class="ti-main flex-grow-1">
-                    <div class="ti-name"><%= t.name %></div>
+                    <div class="ti-name">
+                        <a class="brand-accent" href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
+                    </div>
                     <div class="ti-meta"><span><%= t.start_date %></span><span class="sep">–</span><span><%= t.end_date %></span></div>
                   </div>
                   <div class="ti-aside d-flex flex-column align-items-end gap-2">
