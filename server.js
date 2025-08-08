@@ -41,6 +41,63 @@ const TODAY = new Date(Date.UTC(NOW.getUTCFullYear(), NOW.getUTCMonth(), NOW.get
 function pad2(n){ return String(n).padStart(2,'0'); }
 function toISO(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
 
+// Format a UTC date range like:
+//  - "15. - 19. May" (same month, current year)
+//  - "29. March - 05. April" (different months, current year)
+//  - "29. March - 05. April 2024" (same year, not current)
+//  - "29. December 2024 - 05. January 2025" (cross-year)
+function formatDateRangeUTC(start, end, now = TODAY) {
+    if (!start && !end) return '';
+    const s = start || end;
+    const e = end || start || start;
+    if (!(s instanceof Date) || isNaN(s)) return '';
+    if (!(e instanceof Date) || isNaN(e)) return '';
+
+    const monthNames = [
+        'Jan','Feb','Mar','Apr','May','Jun',
+        'Jul','Aug','Sep','Oct','Nov','Dec'
+    ];
+
+    const curY = now.getUTCFullYear();
+    const sY = s.getUTCFullYear();
+    const sM = s.getUTCMonth();
+    const sD = s.getUTCDate();
+    const eY = e.getUTCFullYear();
+    const eM = e.getUTCMonth();
+    const eD = e.getUTCDate();
+
+    const dd = (n) => String(n).padStart(2, '0');
+    const sDay = dd(sD);
+    const eDay = dd(eD);
+    const sMon = monthNames[sM];
+    const eMon = monthNames[eM];
+
+    if (sY === eY) {
+        const yearSuffix = sY === curY ? '' : ` ${sY}`;
+        if (sM === eM) {
+            return `${sDay}. - ${eDay}. ${sMon}${yearSuffix}`;
+        } else {
+            return `${sDay}. ${sMon} - ${eDay}. ${eMon}${yearSuffix}`;
+        }
+    } else {
+        return `${sDay}. ${sMon} ${sY} - ${eDay}. ${eMon} ${eY}`;
+    }
+}
+
+// Expose to templates, accept Date or 'YYYY-MM-DD' strings
+app.locals.formatDateRange = (s, e) => {
+    const toDate = (x) => {
+        if (!x) return null;
+        if (x instanceof Date) return x;
+        if (typeof x === 'string') {
+            const m = x.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (m) return new Date(Date.UTC(+m[1], +m[2]-1, +m[3]));
+        }
+        return null;
+    };
+    return formatDateRangeUTC(toDate(s), toDate(e));
+};
+
 // Parse Liquipedia date strings like:
 // "Jan 23 - 26, 2025" | "Jan 29 - Feb 09, 2025" | "Jul 28, 2025"
 function parseLiquipediaDateRange(dateText){

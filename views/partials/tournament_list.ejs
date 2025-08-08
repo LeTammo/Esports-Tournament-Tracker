@@ -26,9 +26,7 @@
                                             <% } %>
                                             <a class="brand-accent" href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
                                         </div>
-                                        <div class="ti-meta"><span><%= t.start_date %></span>
-                                        <span class="sep">–</span>
-                                        <span><%= t.end_date %></span></div>
+                                        <div class="ti-meta"><span><%= formatDateRange(t._sd || t.start_date, t._ed || t.end_date) %></span></div>
                                     </div>
                                     <div class="ti-aside d-flex flex-column align-items-end gap-2">
                                         <span class="badge bg-info text-dark"><%= t.location %></span>
@@ -60,9 +58,7 @@
                                             <% if (t.eta) { %>
                                                 <span class="badge bg-info text-dark"><%= t.eta %></span>
                                             <% } %>
-                                            <span><%= t.start_date %></span>
-                                            <span class="sep">–</span>
-                                            <span><%= t.end_date %></span>
+                                            <span><%= formatDateRange(t._sd || t.start_date, t._ed || t.end_date) %></span>
                                         </div>
                                     </div>
                                     <div class="ti-aside d-flex flex-column align-items-end gap-2">
@@ -96,9 +92,7 @@
                                             <% if (t.eta) { %>
                                                 <span class="badge bg-info text-dark"><%= t.eta %></span>
                                             <% } %>
-                                            <span><%= t.start_date %></span>
-                                            <span class="sep">–</span>
-                                            <span><%= t.end_date %></span>
+                                            <span><%= formatDateRange(t._sd || t.start_date, t._ed || t.end_date) %></span>
                                         </div>
                                     </div>
                                     <div class="ti-aside d-flex flex-column align-items-end gap-2">
@@ -138,9 +132,7 @@
                                             <a class="brand-accent" href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
                                         </div>
                                         <div class="ti-meta">
-                                            <span><%= t.start_date %></span>
-                                            <span class="sep">–</span>
-                                            <span><%= t.end_date %></span>
+                                            <span><%= formatDateRange(t._sd || t.start_date, t._ed || t.end_date) %></span>
                                         </div>
                                     </div>
                                     <div class="ti-aside d-flex flex-column align-items-end gap-2">
