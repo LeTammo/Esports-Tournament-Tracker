@@ -14,9 +14,9 @@
                 <div class="ti-name"><%= t.name %></div>
                 <div class="ti-meta"><span><%= t.start_date %></span><span class="sep">–</span><span><%= t.end_date %></span></div>
               </div>
-              <div class="ti-aside d-flex align-items-center gap-2">
-                <span class="badge bg-info text-dark">Prize: <%= t.prize_pool %></span>
-                <span class="badge bg-secondary"><%= t.location %></span>
+              <div class="ti-aside d-flex flex-column align-items-end gap-2">
+                <span class="badge bg-info text-dark"><%= t.location %></span>
+                <span class="badge bg-secondary">Prize: <%= t.prize_pool %></span>
               </div>
             </div>
           </li>
