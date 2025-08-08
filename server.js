@@ -146,25 +146,32 @@ function normalizeTournamentDates(t) {
     return { start, end };
 }
 
+function parseISODateUTC(s) {
+    if (!s || typeof s !== 'string') return null;
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return null;
+    return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+}
+
 function categorizeTournaments(tournaments) {
-    const today = new Date();
-    today.setHours(0,0,0,0);
+    // Compare using UTC midnight to avoid TZ drift
+    const now = new Date();
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     const current = [];
     const upcoming = [];
     const past = [];
     for (const t of tournaments) {
-        const { start, end } = normalizeTournamentDates(t);
-        const sd = start ? new Date(start.getTime()) : null;
-        const ed = end ? new Date(end.getTime()) : null;
-        const tt = { ...t, _sd: sd, _ed: ed };
+        const sd = parseISODateUTC(t.start_date);
+        const ed = parseISODateUTC(t.end_date) || sd;
+        const tt = { ...t, _sd: sd || null, _ed: ed || null };
         if (sd && ed) {
-            if (sd <= today && today <= ed) current.push(tt);
-            else if (sd > today) upcoming.push(tt);
+            if (sd.getTime() <= today.getTime() && today.getTime() <= ed.getTime()) current.push(tt);
+            else if (sd.getTime() > today.getTime()) upcoming.push(tt);
             else past.push(tt);
         } else if (sd) {
-            if (sd > today) upcoming.push(tt); else past.push(tt);
+            if (sd.getTime() > today.getTime()) upcoming.push(tt); else past.push(tt);
         } else {
-            // Unknown date -> treat as upcoming to keep visible
+            // Unknown date -> keep visible as upcoming
             upcoming.push(tt);
         }
     }

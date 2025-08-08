@@ -9,7 +9,7 @@
     <% } else { %>
       <% if (currentTournaments && currentTournaments.length) { %>
         <div class="category-block mb-3">
-          <div class="category-title text-success">Current tournament<%= currentTournaments.length>1 ? 's' : '' %></div>
+          <div class="category-title text-success">Currently live</div>
           <ul class="list-group clean-list" id="tournament-list">
             <% currentTournaments.forEach((t, idx) => { %>
               <li class="list-group-item tournament-item highlight-current<%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>" data-included="<%= t.included %>" data-idx="c-<%= idx %>">
@@ -29,7 +29,7 @@
         </div>
       <% } else if (upNextTournaments && upNextTournaments.length) { %>
         <div class="category-block mb-3">
-          <div class="category-title text-info">Upcoming highlight</div>
+          <div class="category-title text-info">Upcoming</div>
           <ul class="list-group clean-list" id="tournament-list">
             <% upNextTournaments.forEach((t, idx) => { %>
               <li class="list-group-item tournament-item highlight-upnext<%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>" data-included="<%= t.included %>" data-idx="u-<%= idx %>">
@@ -51,7 +51,7 @@
 
       <% if (nextTournaments && nextTournaments.length) { %>
         <div class="category-block mb-3">
-          <div class="category-title text-primary">Next tournaments</div>
+          <div class="category-title text-primary">Next up</div>
           <ul class="list-group clean-list" id="tournament-list">
             <% nextTournaments.forEach((t, idx) => { %>
               <li class="list-group-item tournament-item<%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>" data-included="<%= t.included %>" data-idx="n-<%= idx %>">
