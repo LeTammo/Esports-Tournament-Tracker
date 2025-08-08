@@ -120,32 +120,6 @@ function parseDateLoose(str) {
     return null;
 }
 
-function normalizeTournamentDates(t) {
-    // Try using both start_date and end_date; if same string with a range, parse both sides
-    const same = t.start_date && t.end_date && t.start_date === t.end_date;
-    let start = parseDateLoose(t.start_date);
-    let end = parseDateLoose(t.end_date);
-    if (same && typeof t.start_date === 'string') {
-        const s = t.start_date.replace(/[\u2013\u2014]/g, '-');
-        const parts = s.split(/\s*-\s*/);
-
-        if (parts.length >= 2) {
-            const s1 = parseDateLoose(parts[0]);
-            const s2 = parseDateLoose(parts[1]);
-            if (s1) start = s1;
-            if (s2) end = s2;
-            if (t.name === "Trackmania World Cup 2025") {
-                console.log(parts);
-            }
-        }
-    }
-    
-    // Fallbacks
-    if (!start && end) start = end;
-    if (!end && start) end = start;
-    return { start, end };
-}
-
 function parseISODateUTC(s) {
     if (!s || typeof s !== 'string') return null;
     const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
