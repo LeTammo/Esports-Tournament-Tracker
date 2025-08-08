@@ -18,6 +18,173 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const SAVED_PAGES_DIR = path.join(__dirname, 'data', 'saved_pages');
 
+// Map month names/abbrevs to numbers (1-12)
+const MONTH_MAP = {
+    jan: 1, january: 1,
+    feb: 2, february: 2,
+    mar: 3, march: 3,
+    apr: 4, april: 4,
+    may: 5,
+    jun: 6, june: 6,
+    jul: 7, july: 7,
+    aug: 8, august: 8,
+    sep: 9, sept: 9, september: 9,
+    oct: 10, october: 10,
+    nov: 11, november: 11,
+    dec: 12, december: 12,
+};
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+function toISO(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
+
+// Parse Liquipedia date strings like:
+// "Jan 23 - 26, 2025" | "Jan 29 - Feb 09, 2025" | "Jul 28, 2025"
+function parseLiquipediaDateRange(dateText){
+    if (!dateText) return { startISO: null, endISO: null };
+    const s = String(dateText).replace(/[\u2013\u2014]/g,'-').replace(/\s+/g,' ').trim();
+    // Range with optional 2nd month
+    let m = s.match(/^([A-Za-z]{3,})\s+(\d{1,2})\s*-\s*([A-Za-z]{3,})?\s*(\d{1,2}),\s*(\d{4})$/);
+    if (m){
+        const m1 = MONTH_MAP[m[1].toLowerCase()];
+        const d1 = parseInt(m[2],10);
+        const mon2 = m[3] ? m[3].toLowerCase() : m[1].toLowerCase();
+        const m2 = MONTH_MAP[mon2];
+        const d2 = parseInt(m[4],10);
+        const y = parseInt(m[5],10);
+        if (m1 && m2 && d1 && d2 && y){
+            return { startISO: toISO(y,m1,d1), endISO: toISO(y,m2,d2) };
+        }
+    }
+    // Single date
+    m = s.match(/^([A-Za-z]{3,})\s+(\d{1,2}),\s*(\d{4})$/);
+    if (m){
+        const mm = MONTH_MAP[m[1].toLowerCase()];
+        const d = parseInt(m[2],10);
+        const y = parseInt(m[3],10);
+        if (mm && d && y){
+            const iso = toISO(y,mm,d);
+            return { startISO: iso, endISO: iso };
+        }
+    }
+    // Fallback: try native Date
+    const nd = new Date(s);
+    if (!isNaN(nd)){
+        const y = nd.getFullYear();
+        const mm = nd.getMonth()+1;
+        const d = nd.getDate();
+        const iso = toISO(y,mm,d);
+        return { startISO: iso, endISO: iso };
+    }
+    return { startISO: null, endISO: null };
+}
+// Loose date parsing from various human formats
+function parseDateLoose(str) {
+    if (!str || typeof str !== 'string') return null;
+    const s = str.replace(/[\u2013\u2014]/g, '-').trim();
+    // Extract right side if it's a range like "2025-04-01 - 2025-04-10"
+    const parts = s.split(/\s*-\s*/);
+    const tryParse = (x) => {
+        const d = new Date(x);
+        if (!isNaN(d)) return d;
+        // Try common formats: "Apr 1, 2025", "1 Apr 2025"
+        const m = x.match(/(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})/);
+        if (m) {
+            return new Date(`${m[2]} ${m[1]}, ${m[3]}`);
+        }
+        const m2 = x.match(/([A-Za-z]{3,})\s+(\d{1,2}),?\s+(\d{4})/);
+        if (m2) {
+            return new Date(`${m2[1]} ${m2[2]}, ${m2[3]}`);
+        }
+        // YYYY-MM-DD
+        const iso = x.match(/(\d{4})-(\d{2})-(\d{2})/);
+        if (iso) {
+            return new Date(`${iso[1]}-${iso[2]}-${iso[3]}`);
+        }
+        // YYYY/MM/DD
+        const sl = x.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})/);
+        if (sl) {
+            return new Date(`${sl[1]}-${sl[2].padStart(2,'0')}-${sl[3].padStart(2,'0')}`);
+        }
+        return null;
+    };
+    // If the original contains a comma, try as-is first
+    let d = tryParse(s);
+    if (d) return d;
+    // Try taking left or right part of range
+    if (parts.length >= 2) {
+        d = tryParse(parts[0]);
+        if (d) return d;
+        d = tryParse(parts[1]);
+        if (d) return d;
+    }
+    return null;
+}
+
+function normalizeTournamentDates(t) {
+    // Try using both start_date and end_date; if same string with a range, parse both sides
+    const same = t.start_date && t.end_date && t.start_date === t.end_date;
+    let start = parseDateLoose(t.start_date);
+    let end = parseDateLoose(t.end_date);
+    if (same && typeof t.start_date === 'string') {
+        const s = t.start_date.replace(/[\u2013\u2014]/g, '-');
+        const parts = s.split(/\s*-\s*/);
+
+        if (parts.length >= 2) {
+            const s1 = parseDateLoose(parts[0]);
+            const s2 = parseDateLoose(parts[1]);
+            if (s1) start = s1;
+            if (s2) end = s2;
+            if (t.name === "Trackmania World Cup 2025") {
+                console.log(parts);
+            }
+        }
+    }
+    
+    // Fallbacks
+    if (!start && end) start = end;
+    if (!end && start) end = start;
+    return { start, end };
+}
+
+function categorizeTournaments(tournaments) {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const current = [];
+    const upcoming = [];
+    const past = [];
+    for (const t of tournaments) {
+        const { start, end } = normalizeTournamentDates(t);
+        const sd = start ? new Date(start.getTime()) : null;
+        const ed = end ? new Date(end.getTime()) : null;
+        const tt = { ...t, _sd: sd, _ed: ed };
+        if (sd && ed) {
+            if (sd <= today && today <= ed) current.push(tt);
+            else if (sd > today) upcoming.push(tt);
+            else past.push(tt);
+        } else if (sd) {
+            if (sd > today) upcoming.push(tt); else past.push(tt);
+        } else {
+            // Unknown date -> treat as upcoming to keep visible
+            upcoming.push(tt);
+        }
+    }
+    const byStart = (a, b) => {
+        const ax = a._sd ? a._sd.getTime() : Infinity;
+        const bx = b._sd ? b._sd.getTime() : Infinity;
+        return ax - bx;
+    };
+    current.sort(byStart);
+    upcoming.sort(byStart);
+    past.sort(byStart);
+    // Highlight: if no current, pick first upcoming as upNext
+    let upNext = [];
+    let next = upcoming;
+    if (current.length === 0 && upcoming.length > 0) {
+        upNext = [upcoming[0]];
+        next = upcoming.slice(1);
+    }
+    return { current, upNext, next, past };
+}
 function parseTournaments(html, currentYear) {
     const $ = cheerio.load(html);
 
@@ -42,9 +209,12 @@ function parseTournaments(html, currentYear) {
         const maxYear = Math.max(...years);
         if (maxYear < currentYear) return;
 
+        const { startISO, endISO } = parseLiquipediaDateRange(dateText);
         tournaments.push({
             name,
             date: dateText,
+            start_date: startISO || null,
+            end_date: endISO || null,
             prizePool: prize || 'N/A',
             location: location || 'N/A'
         });
@@ -100,8 +270,10 @@ app.post('/api/submit', async (req, res) => {
                 }
                 let insertCount = 0;
                 tournaments.forEach(t => {
+                    const start = t.start_date || t.date || null;
+                    const end = t.end_date || t.date || null;
                     db.run('INSERT OR IGNORE INTO tournaments (name, start_date, end_date, prize_pool, location, tier_id) VALUES (?, ?, ?, ?, ?, ?)',
-                        [t.name, t.date, t.date, t.prizePool, t.location, tierRow.id], (err) => {
+                        [t.name, start, end, t.prizePool, t.location, tierRow.id], (err) => {
                             if (err) console.error('Tournament insert error:', err, t);
                         });
                     insertCount++;
@@ -241,10 +413,15 @@ app.get('/', async (req, res) => {
         tournaments = filtered;
     }
     const savedPages = await db.getSavedPages();
+    const cats = categorizeTournaments(tournaments);
     res.render('index', {
         games,
         tiers,
         tournaments,
+        currentTournaments: cats.current,
+        upNextTournaments: cats.upNext,
+        nextTournaments: cats.next,
+        pastTournaments: cats.past,
         savedPages,
         selectedGame,
         selectedTier,
