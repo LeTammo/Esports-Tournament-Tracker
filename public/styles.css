@@ -152,6 +152,7 @@ html,body{
   color:#0b0f14!important;
 }
 .badge.bg-secondary{background:#2f3746!important;color:#c9d3e1!important}
+.eta-badge{background:#1b2836;color:#a7c8ff;border:1px solid #2a3a50; font-weight:600}
 
 /* Filters visibility helper */
 #filters-section #toggle-filters{border-radius:999px}

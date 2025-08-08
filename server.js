@@ -163,7 +163,23 @@ function categorizeTournaments(tournaments) {
     for (const t of tournaments) {
         const sd = parseISODateUTC(t.start_date);
         const ed = parseISODateUTC(t.end_date) || sd;
-        const tt = { ...t, _sd: sd || null, _ed: ed || null };
+        // Compute ETA for upcoming (days/weeks/months)
+        let eta = null;
+        if (sd) {
+            const diffMs = sd.getTime() - today.getTime();
+            if (diffMs > 0) {
+                const days = Math.ceil(diffMs / (24*60*60*1000));
+                if (days < 7) eta = `in ${days} day${days===1?'':'s'}`;
+                else if (days < 28) {
+                    const weeks = Math.round(days/7);
+                    eta = `in ${weeks} week${weeks===1?'':'s'}`;
+                } else {
+                    const months = Math.round(days/30);
+                    eta = `in ${months} month${months===1?'':'s'}`;
+                }
+            }
+        }
+        const tt = { ...t, _sd: sd || null, _ed: ed || null, eta };
         if (sd && ed) {
             if (sd.getTime() <= today.getTime() && today.getTime() <= ed.getTime()) current.push(tt);
             else if (sd.getTime() > today.getTime()) upcoming.push(tt);
@@ -183,13 +199,9 @@ function categorizeTournaments(tournaments) {
     current.sort(byStart);
     upcoming.sort(byStart);
     past.sort(byStart);
-    // Highlight: if no current, pick first upcoming as upNext
-    let upNext = [];
-    let next = upcoming;
-    if (current.length === 0 && upcoming.length > 0) {
-        upNext = [upcoming[0]];
-        next = upcoming.slice(1);
-    }
+    // Always show the next upcoming tournament as a highlight
+    let upNext = upcoming.length > 0 ? [upcoming[0]] : [];
+    let next = upcoming.length > 1 ? upcoming.slice(1) : [];
     return { current, upNext, next, past };
 }
 function parseTournaments(html, currentYear) {
