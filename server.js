@@ -133,7 +133,6 @@ function categorizeTournaments(tournaments) {
     upcoming.sort(byStart);
     past.sort(byStart);
     next.sort(byStart);
-    console.log(current)
     return { current, upcoming, past, next };
 }
 

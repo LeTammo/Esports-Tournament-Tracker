@@ -29,7 +29,6 @@ db.serialize(() => {
   )`);
 });
 
-// Helper functions for async/await usage
 function getGames() {
   return new Promise((resolve, reject) => {
     db.all('SELECT * FROM games', (err, rows) => {

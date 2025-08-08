@@ -15,10 +15,10 @@
 <body>
     <%- include('partials/navbar', { games, selectedGame }) %>
     <%- include('partials/tiers_tabs', { tiers, selectedGame, selectedTier }) %>
-        <div class="container mt-4">
-            <% if (selectedTier) { %>
-                <%- include('partials/filters', { filters, selectedTier }) %>
-            <% } %>
+    <div class="container mt-4">
+        <% if (selectedTier) { %>
+            <%- include('partials/filters', { filters, selectedTier }) %>
+        <% } %>
         <div class="row">
             <div class="col">
                 <% if (!selectedGame) { %>

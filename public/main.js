@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Submit form AJAX
     const submitForm = document.getElementById('submit-form');
     if (submitForm) {
         submitForm.addEventListener('submit', async (e) => {
@@ -22,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Resubmit saved page
     document.querySelectorAll('form[action="/api/submit"]').forEach(form => {
         form.addEventListener('submit', async (e) => {
             if (form.id === 'submit-form') return; // handled above
@@ -42,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Filters AJAX
     const filtersForm = document.getElementById('filters-form');
     if (filtersForm) {
         filtersForm.addEventListener('submit', async (e) => {
