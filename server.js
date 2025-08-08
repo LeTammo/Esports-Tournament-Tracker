@@ -116,9 +116,9 @@ function categorizeTournaments(tournaments) {
 
         if (end.getTime() < TODAY) {
             past.push(tt);
-        } else if (start.getTime() <= TODAY) {
+        } else if (tt.included && start.getTime() <= TODAY) {
             current.push(tt);
-        } else if (start.getTime() <= TODAY.getTime() + 14 * 24 * 60 * 60 * 1000) {
+        } else if (tt.included && start.getTime() <= TODAY.getTime() + 14 * 24 * 60 * 60 * 1000) {
             upcoming.push(tt);
         } else {
             next.push(tt);
