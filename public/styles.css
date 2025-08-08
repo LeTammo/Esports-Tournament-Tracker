@@ -306,15 +306,6 @@ body {
     padding-right: var(--pad)
 }
 
-/* Sub-navigation (tiers) */
-.subnav {
-    background: linear-gradient(180deg, #0e1319 0%, #0f141b 100%);
-    border-bottom: 1px solid rgba(255, 255, 255, .06);
-    position: sticky;
-    top: 56px;
-    z-index: 1030;
-}
-
 /* Filters icon toggle */
 .icon-toggle {
     display: inline-flex;
@@ -341,37 +332,39 @@ body {
     transform: rotate(180deg)
 }
 
-.subnav .subnav-pills {
+/* Sub-navigation (tiers) */
+/* Subnav (Tier Tabs) Styling - Match Navbar */
+.subnav {
+    background: linear-gradient(180deg, #0b0f14 0%, #0e1319 100%) !important;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    margin-bottom: 1.2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.subnav .container {
     display: flex;
-    gap: .4rem;
-    padding: .65rem 0;
-    margin: 0;
-    list-style: none;
-    white-space: nowrap;
-    overflow: auto;
-    scrollbar-width: none;
+    justify-content: center;
 }
-
-.subnav .subnav-pills::-webkit-scrollbar {
-    display: none
+.subnav-pills {
+    display: flex;
+    justify-content: center;
+    gap: .25rem;
+    margin: 0 auto;
 }
-
-.subnav .nav-link {
-    color: var(--fg-1);
-    background: var(--bg-2);
-    border: 1px solid rgba(255, 255, 255, .06);
-    border-radius: 999px;
-    padding: .35rem .9rem;
+.subnav-pills .nav-link {
+    color: var(--fg-1) !important;
+    background: transparent;
+    border-radius: 8px;
+    border: none;
+    padding: .35rem .7rem;
+    font-weight: 500;
+    transition: background .15s, color .15s;
 }
-
-.subnav .nav-link:hover {
-    background: #16202c;
-    color: var(--fg-0)
+.subnav-pills .nav-link.active,
+.subnav-pills .nav-link:hover {
+    color: var(--fg-0) !important;
+    background: rgba(125, 211, 252, .1);
 }
-
-.subnav .nav-link.active {
-    color: #0b0f14;
-    background: var(--brand);
-    border-color: transparent;
-    box-shadow: 0 6px 16px rgba(125, 211, 252, .25);
+.subnav-pills .nav-link:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(125, 211, 252, .25);
 }
