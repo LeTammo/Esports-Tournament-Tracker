@@ -1,0 +1,128 @@
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Filters</h5>
+    <% if (!selectedTier) { %>
+      <div class="text-muted">Select a tier to add filters.</div>
+    <% } else { %>
+      <div id="filters-section">
+  <button class="btn btn-outline-secondary btn-sm mb-2"
+    type="button" id="toggle-filters"
+    aria-expanded="false" aria-controls="filters-collapse">
+          Show/Hide Filters
+        </button>
+        <script>
+        // Show all tournaments when filters are expanded; hide only those with class
+        // "filtered" when filters are collapsed.
+        function updateTournamentVisibility() {
+          var collapse = document.getElementById('filters-collapse');
+          var list = document.getElementById('tournament-list');
+          if (!collapse || !list) return;
+    var unfolded = !collapse.classList.contains('d-none');
+          if (unfolded) {
+            // Remove d-none from every tournament item
+            list.querySelectorAll('li').forEach(function(li) {
+              li.classList.remove('d-none');
+            });
+          } else {
+            // Ensure filtered items are hidden again
+            list.querySelectorAll('li.filtered').forEach(function(li) {
+              li.classList.add('d-none');
+            });
+          }
+        }
+
+        // Helpers to add/remove filter rules dynamically (used by onclick handlers)
+        function addIncludeRule() {
+          const idx = document.querySelectorAll('#include-rules .input-group').length;
+          const div = document.createElement('div');
+          div.className = 'input-group mb-1';
+          div.innerHTML = `
+            <select class="form-select" name="include_type_${idx}">
+              <option value="has">Has in name</option>
+              <option value="starts">Starts with</option>
+              <option value="ends">Ends with</option>
+            </select>
+            <input type="text" class="form-control" name="include_value_${idx}" placeholder="Value">
+            <button class="btn btn-outline-danger" type="button" onclick="this.parentNode.remove();">Remove</button>
+          `;
+          document.getElementById('include-rules').appendChild(div);
+        }
+        function addExcludeRule() {
+          const idx = document.querySelectorAll('#exclude-rules .input-group').length;
+          const div = document.createElement('div');
+          div.className = 'input-group mb-1';
+          div.innerHTML = `
+            <select class="form-select" name="exclude_type_${idx}">
+              <option value="has">Has in name</option>
+            </select>
+            <input type="text" class="form-control" name="exclude_value_${idx}" placeholder="Value">
+            <button class="btn btn-outline-danger" type="button" onclick="this.parentNode.remove();">Remove</button>
+          `;
+          document.getElementById('exclude-rules').appendChild(div);
+        }
+        (function() {
+          // Defer setup until the DOM is ready so elements exist
+          document.addEventListener('DOMContentLoaded', function() {
+            var btn = document.getElementById('toggle-filters');
+            var collapse = document.getElementById('filters-collapse');
+            if (!btn || !collapse) return;
+            // Custom toggle without Bootstrap JS so our listener always fires
+            btn.addEventListener('click', function() {
+              var willShow = collapse.classList.contains('d-none');
+              if (willShow) {
+                collapse.classList.remove('d-none');
+                btn.setAttribute('aria-expanded', 'true');
+              } else {
+                collapse.classList.add('d-none');
+                btn.setAttribute('aria-expanded', 'false');
+              }
+              updateTournamentVisibility();
+            });
+            // Initialize visibility on first load
+            updateTournamentVisibility();
+          });
+        })();
+        </script>
+        <div class="d-none" id="filters-collapse">
+          <form id="filters-form">
+            <input type="hidden" name="tier_id" value="<%= selectedTier %>">
+            <div class="mb-2">
+              <label class="form-label">Include Rules</label>
+              <div id="include-rules">
+                <% (filters && filters.include ? filters.include : []).forEach((rule, idx) => { %>
+                  <div class="input-group mb-1">
+                    <select class="form-select" name="include_type_<%= idx %>">
+                      <option value="has" <%= rule.type === 'has' ? 'selected' : '' %>>Has in name</option>
+                      <option value="starts" <%= rule.type === 'starts' ? 'selected' : '' %>>Starts with</option>
+                      <option value="ends" <%= rule.type === 'ends' ? 'selected' : '' %>>Ends with</option>
+                    </select>
+                    <input type="text" class="form-control" name="include_value_<%= idx %>" value="<%= rule.value %>" placeholder="Value">
+                    <button class="btn btn-outline-danger" type="button" onclick="this.parentNode.remove();">Remove</button>
+                  </div>
+                <% }) %>
+              </div>
+              <button class="btn btn-sm btn-outline-primary" type="button" onclick="addIncludeRule()">Add Include Rule</button>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Exclude Rules</label>
+              <div id="exclude-rules">
+                <% (filters && filters.exclude ? filters.exclude : []).forEach((rule, idx) => { %>
+                  <div class="input-group mb-1">
+                    <select class="form-select" name="exclude_type_<%= idx %>">
+                      <option value="has" <%= rule.type === 'has' ? 'selected' : '' %>>Has in name</option>
+                    </select>
+                    <input type="text" class="form-control" name="exclude_value_<%= idx %>" value="<%= rule.value %>" placeholder="Value">
+                    <button class="btn btn-outline-danger" type="button" onclick="this.parentNode.remove();">Remove</button>
+                  </div>
+                <% }) %>
+              </div>
+              <button class="btn btn-sm btn-outline-danger" type="button" onclick="addExcludeRule()">Add Exclude Rule</button>
+            </div>
+            <button class="btn btn-success btn-sm" type="submit">Save Filters</button>
+          </form>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+

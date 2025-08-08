@@ -4,11 +4,17 @@ const path = require('path');
 const cheerio = require('cheerio');
 const axios = require('axios');
 const db = require('./utils/db');
-const app = express();
-const PORT = 3000;
+const bodyParser = require('body-parser');
+const filterUtils = require('./utils/filter');
 
-app.use(express.json());
-app.use(express.static('public'));
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 const SAVED_PAGES_DIR = path.join(__dirname, 'data', 'saved_pages');
 
@@ -153,6 +159,75 @@ app.get('/api/saved-pages', (req, res) => {
             };
         });
         res.json({ pages });
+    });
+});
+
+// Home page: render tournaments, games, tiers, filters, etc.
+app.get('/', async (req, res) => {
+    const games = await db.getGames();
+    let selectedGame = req.query.game || null;
+    let selectedTier = req.query.tier || null;
+    let tiers = [];
+    let tournaments = [];
+    let filters = null;
+    const filtersUnfolded = req.query.filters === 'show';
+    if (selectedGame) {
+        // Only show tiers for the selected game
+        const gameRow = games.find(g => g.name === selectedGame);
+        if (gameRow) {
+            tiers = await new Promise((resolve, reject) => {
+                db.all('SELECT * FROM tiers WHERE game_id = ?', [gameRow.id], (err, rows) => {
+                    if (err) resolve([]); else resolve(rows);
+                });
+            });
+        }
+        if (selectedTier) {
+            // Single tier selected: filter tournaments by tier
+            tournaments = await new Promise((resolve, reject) => {
+                db.all('SELECT * FROM tournaments WHERE tier_id = ?', [selectedTier], (err, rows) => {
+                    if (err) resolve([]); else resolve(rows);
+                });
+            });
+            filters = await new Promise((resolve, reject) => {
+                db.get('SELECT filter_json FROM tiers WHERE id = ?', [selectedTier], (err, row) => {
+                    if (err || !row) resolve({ include: [], exclude: [] });
+                    else resolve(row.filter_json ? JSON.parse(row.filter_json) : { include: [], exclude: [] });
+                });
+            });
+            tournaments = filterUtils.filterTournaments(tournaments, filters);
+        } else {
+            // All tiers: get all tournaments for this game
+            tournaments = await new Promise((resolve, reject) => {
+                db.all('SELECT t.*, r.id as tier_id FROM tournaments t JOIN tiers r ON t.tier_id = r.id WHERE r.game_id = ?', [gameRow.id], (err, rows) => {
+                    if (err) resolve([]); else resolve(rows);
+                });
+            });
+            // Get all filters for all tiers
+            const tierFilters = {};
+            for (const tier of tiers) {
+                tierFilters[tier.id] = tier.filter_json ? JSON.parse(tier.filter_json) : { include: [], exclude: [] };
+            }
+            // Apply each tournament's tier's filter
+            tournaments = tournaments.map(t => {
+                const f = tierFilters[t.tier_id] || { include: [], exclude: [] };
+                return filterUtils.filterTournaments([t], f)[0];
+            });
+        }
+    } else {
+        // No game selected: show all tiers and all tournaments for current year
+        tiers = await db.getTiers();
+        tournaments = await db.getTournaments({ year: new Date().getFullYear() });
+    }
+    const savedPages = await db.getSavedPages();
+    res.render('index', {
+        games,
+        tiers,
+        tournaments,
+        savedPages,
+        selectedGame,
+        selectedTier,
+        filters,
+        filtersUnfolded
     });
 });
 

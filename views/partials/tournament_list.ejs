@@ -1,0 +1,32 @@
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Tournaments</h5>
+    <% if (!tournaments.length) { %>
+      <div class="text-muted">No tournaments found for this selection.</div>
+    <% } else { %>
+      <ul class="list-group" id="tournament-list">
+        <% tournaments.forEach((t, idx) => { %>
+          <li class="list-group-item<%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>" data-included="<%= t.included %>" data-idx="<%= idx %>">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <strong><%= t.name %></strong><br>
+                <small class="text-muted"><%= t.start_date %> - <%= t.end_date %></small>
+              </div>
+              <div>
+                <span class="badge bg-info text-dark me-2">Prize: <%= t.prize_pool %></span>
+                <span class="badge bg-secondary"><%= t.location %></span>
+              </div>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </div>
+</div>
+<style>
+  li.filtered {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+</style>
+

@@ -28,5 +28,57 @@ db.serialize(() => {
   )`);
 });
 
-module.exports = db;
+// Helper functions for async/await usage
+function getGames() {
+  return new Promise((resolve, reject) => {
+    db.all('SELECT * FROM games', (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
 
+function getTiers() {
+  return new Promise((resolve, reject) => {
+    db.all('SELECT * FROM tiers', (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+
+function getTournaments({ year }) {
+  return new Promise((resolve, reject) => {
+    db.all('SELECT * FROM tournaments WHERE start_date LIKE ?', [`${year}%`], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+
+const fs = require('fs');
+const path = require('path');
+const SAVED_PAGES_DIR = path.join(__dirname, '../data/saved_pages');
+function getSavedPages() {
+  return new Promise((resolve, reject) => {
+    fs.readdir(SAVED_PAGES_DIR, (err, files) => {
+      if (err) return resolve([]);
+      const pages = files.filter(f => f.endsWith('.html')).map(f => {
+        const [game, ...tierParts] = f.replace('.html', '').split('_');
+        const tier = tierParts.join('_');
+        return {
+          file: f,
+          url: `https://liquipedia.net/${game}/${tier}`
+        };
+      });
+      resolve(pages);
+    });
+  });
+}
+
+module.exports = Object.assign(db, {
+  getGames,
+  getTiers,
+  getTournaments,
+  getSavedPages
+});

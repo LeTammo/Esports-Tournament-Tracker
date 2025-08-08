@@ -1,0 +1,33 @@
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Add Liquipedia Tournament Page</h5>
+    <form method="POST" action="/api/submit" id="submit-form">
+      <div class="input-group mb-2">
+        <input type="url" class="form-control" id="input-url" name="url" placeholder="Paste Liquipedia link..." required>
+        <button class="btn btn-primary" type="submit" id="submit-link">Submit</button>
+      </div>
+      <div id="submit-status" class="form-text"></div>
+    </form>
+  </div>
+</div>
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Saved Pages</h5>
+    <% if (!savedPages.length) { %>
+      <div class="text-muted">No saved pages found.</div>
+    <% } else { %>
+      <ul class="list-group">
+        <% savedPages.forEach(page => { %>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><%= page.url %></span>
+            <form method="POST" action="/api/submit" class="d-inline">
+              <input type="hidden" name="url" value="<%= page.url %>">
+              <button class="btn btn-sm btn-secondary">Resubmit</button>
+            </form>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </div>
+</div>
+
