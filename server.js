@@ -397,7 +397,7 @@ app.get('/', async (req, res) => {
         // No game selected: show all tiers and all tournaments (apply per-tier filters like "All tiers")
         tiers = await db.getTiers();
         const allWithTiers = await new Promise((resolve) => {
-            db.all('SELECT t.*, r.id as tier_id, r.filter_json FROM tournaments t JOIN tiers r ON t.tier_id = r.id', [], (err, rows) => {
+            db.all('SELECT t.*, r.id as tier_id, r.filter_json, g.name as game_name FROM tournaments t JOIN tiers r ON t.tier_id = r.id JOIN games g ON r.game_id = g.id', [], (err, rows) => {
                 if (err || !rows) resolve([]); else resolve(rows);
             });
         });
