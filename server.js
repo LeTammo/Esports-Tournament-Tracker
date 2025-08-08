@@ -34,6 +34,10 @@ const MONTH_MAP = {
     dec: 12, december: 12,
 };
 
+const NOW = new Date();
+const TODAY = new Date(Date.UTC(NOW.getUTCFullYear(), NOW.getUTCMonth(), NOW.getUTCDate()));
+
+
 function pad2(n){ return String(n).padStart(2,'0'); }
 function toISO(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
 
@@ -42,8 +46,22 @@ function toISO(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
 function parseLiquipediaDateRange(dateText){
     if (!dateText) return { startISO: null, endISO: null };
     const s = String(dateText).replace(/[\u2013\u2014]/g,'-').replace(/\s+/g,' ').trim();
+    // Explicit cross-year or same-year range with years on both sides:
+    // e.g., "Dec 4, 2024 - May 15, 2025" or "Jan 3, 2025 - Jan 10, 2025"
+    let m = s.match(/^([A-Za-z]{3,})\s+(\d{1,2}),\s*(\d{4})\s*-\s*([A-Za-z]{3,})\s+(\d{1,2}),\s*(\d{4})$/);
+    if (m){
+        const m1 = MONTH_MAP[m[1].toLowerCase()];
+        const d1 = parseInt(m[2],10);
+        const y1 = parseInt(m[3],10);
+        const m2 = MONTH_MAP[m[4].toLowerCase()];
+        const d2 = parseInt(m[5],10);
+        const y2 = parseInt(m[6],10);
+        if (m1 && m2 && d1 && d2 && y1 && y2){
+            return { startISO: toISO(y1,m1,d1), endISO: toISO(y2,m2,d2) };
+        }
+    }
     // Range with optional 2nd month
-    let m = s.match(/^([A-Za-z]{3,})\s+(\d{1,2})\s*-\s*([A-Za-z]{3,})?\s*(\d{1,2}),\s*(\d{4})$/);
+    m = s.match(/^([A-Za-z]{3,})\s+(\d{1,2})\s*-\s*([A-Za-z]{3,})?\s*(\d{1,2}),\s*(\d{4})$/);
     if (m){
         const m1 = MONTH_MAP[m[1].toLowerCase()];
         const d1 = parseInt(m[2],10);
@@ -77,48 +95,6 @@ function parseLiquipediaDateRange(dateText){
     }
     return { startISO: null, endISO: null };
 }
-// Loose date parsing from various human formats
-function parseDateLoose(str) {
-    if (!str || typeof str !== 'string') return null;
-    const s = str.replace(/[\u2013\u2014]/g, '-').trim();
-    // Extract right side if it's a range like "2025-04-01 - 2025-04-10"
-    const parts = s.split(/\s*-\s*/);
-    const tryParse = (x) => {
-        const d = new Date(x);
-        if (!isNaN(d)) return d;
-        // Try common formats: "Apr 1, 2025", "1 Apr 2025"
-        const m = x.match(/(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})/);
-        if (m) {
-            return new Date(`${m[2]} ${m[1]}, ${m[3]}`);
-        }
-        const m2 = x.match(/([A-Za-z]{3,})\s+(\d{1,2}),?\s+(\d{4})/);
-        if (m2) {
-            return new Date(`${m2[1]} ${m2[2]}, ${m2[3]}`);
-        }
-        // YYYY-MM-DD
-        const iso = x.match(/(\d{4})-(\d{2})-(\d{2})/);
-        if (iso) {
-            return new Date(`${iso[1]}-${iso[2]}-${iso[3]}`);
-        }
-        // YYYY/MM/DD
-        const sl = x.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})/);
-        if (sl) {
-            return new Date(`${sl[1]}-${sl[2].padStart(2,'0')}-${sl[3].padStart(2,'0')}`);
-        }
-        return null;
-    };
-    // If the original contains a comma, try as-is first
-    let d = tryParse(s);
-    if (d) return d;
-    // Try taking left or right part of range
-    if (parts.length >= 2) {
-        d = tryParse(parts[0]);
-        if (d) return d;
-        d = tryParse(parts[1]);
-        if (d) return d;
-    }
-    return null;
-}
 
 function parseISODateUTC(s) {
     if (!s || typeof s !== 'string') return null;
@@ -128,41 +104,24 @@ function parseISODateUTC(s) {
 }
 
 function categorizeTournaments(tournaments) {
-    // Compare using UTC midnight to avoid TZ drift
-    const now = new Date();
-    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const past = [];
     const current = [];
     const upcoming = [];
-    const past = [];
-    for (const t of tournaments) {
-        const sd = parseISODateUTC(t.start_date);
-        const ed = parseISODateUTC(t.end_date) || sd;
-        // Compute ETA for upcoming (days/weeks/months)
-        let eta = null;
-        if (sd) {
-            const diffMs = sd.getTime() - today.getTime();
-            if (diffMs > 0) {
-                const days = Math.ceil(diffMs / (24*60*60*1000));
-                if (days < 7) eta = `in ${days} day${days===1?'':'s'}`;
-                else if (days < 28) {
-                    const weeks = Math.round(days/7);
-                    eta = `in ${weeks} week${weeks===1?'':'s'}`;
-                } else {
-                    const months = Math.round(days/30);
-                    eta = `in ${months} month${months===1?'':'s'}`;
-                }
-            }
-        }
-        const tt = { ...t, _sd: sd || null, _ed: ed || null, eta };
-        if (sd && ed) {
-            if (sd.getTime() <= today.getTime() && today.getTime() <= ed.getTime()) current.push(tt);
-            else if (sd.getTime() > today.getTime()) upcoming.push(tt);
-            else past.push(tt);
-        } else if (sd) {
-            if (sd.getTime() > today.getTime()) upcoming.push(tt); else past.push(tt);
-        } else {
-            // Unknown date -> keep visible as upcoming
+    const next = [];
+    for (const tournament of tournaments) {
+        const start = parseISODateUTC(tournament.start_date);
+        const end = parseISODateUTC(tournament.end_date) || start;
+        let eta = computeETA(start);
+        const tt = { ...tournament, _sd: start, _ed: end, eta };
+
+        if (end.getTime() < TODAY) {
+            past.push(tt);
+        } else if (start.getTime() <= TODAY) {
+            current.push(tt);
+        } else if (start.getTime() <= TODAY.getTime() + 14 * 24 * 60 * 60 * 1000) {
             upcoming.push(tt);
+        } else {
+            next.push(tt);
         }
     }
     const byStart = (a, b) => {
@@ -173,11 +132,28 @@ function categorizeTournaments(tournaments) {
     current.sort(byStart);
     upcoming.sort(byStart);
     past.sort(byStart);
-    // Always show the next upcoming tournament as a highlight
-    let upNext = upcoming.length > 0 ? [upcoming[0]] : [];
-    let next = upcoming.length > 1 ? upcoming.slice(1) : [];
-    return { current, upNext, next, past };
+    next.sort(byStart);
+    console.log(current)
+    return { current, upcoming, past, next };
 }
+
+function computeETA(start) {
+    let eta = null;
+    const diffMs = start.getTime() - TODAY.getTime();
+    if (diffMs > 0) {
+        const days = Math.ceil(diffMs / (24 * 60 * 60 * 1000));
+        if (days < 7) eta = `in ${days} day${days === 1 ? '' : 's'}`;
+        else if (days < 28) {
+            const weeks = Math.round(days / 7);
+            eta = `in ${weeks} week${weeks === 1 ? '' : 's'}`;
+        } else {
+            const months = Math.round(days / 30);
+            eta = `in ${months} month${months === 1 ? '' : 's'}`;
+        }
+    }
+    return eta;
+}
+
 function parseTournaments(html, currentYear) {
     const $ = cheerio.load(html);
 
@@ -410,15 +386,15 @@ app.get('/', async (req, res) => {
         tournaments = filtered;
     }
     const savedPages = await db.getSavedPages();
-    const cats = categorizeTournaments(tournaments);
+    const { current, upcoming, past, next } = categorizeTournaments(tournaments);
     res.render('index', {
         games,
         tiers,
         tournaments,
-        currentTournaments: cats.current,
-        upNextTournaments: cats.upNext,
-        nextTournaments: cats.next,
-        pastTournaments: cats.past,
+        currentTournaments: current,
+        upcomingTournaments: upcoming,
+        pastTournaments: past,
+        nextTournaments: next,
         savedPages,
         selectedGame,
         selectedTier,

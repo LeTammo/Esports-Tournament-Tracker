@@ -3,7 +3,10 @@
     <div class="section-header d-flex justify-content-between align-items-center d-none">
       <h5 class="card-title m-0">Tournaments</h5>
     </div>
-    <% const hasAny = (currentTournaments && currentTournaments.length) || (upNextTournaments && upNextTournaments.length) || (nextTournaments && nextTournaments.length) || (pastTournaments && pastTournaments.length); %>
+    <% const hasAny = (currentTournaments && currentTournaments.length)
+            || (upcomingTournaments && upcomingTournaments.length)
+            || (nextTournaments && nextTournaments.length)
+            || (pastTournaments && pastTournaments.length); %>
     <% if (!hasAny) { %>
       <div class="text-muted">No tournaments found for this selection.</div>
     <% } else { %>
@@ -31,11 +34,11 @@
           </ul>
         </div>
       <% } %>
-      <% if (upNextTournaments && upNextTournaments.length) { %>
+      <% if (upcomingTournaments && upcomingTournaments.length) { %>
         <div class="category-block mb-3">
           <div class="category-title text-info">Upcoming</div>
           <ul class="list-group clean-list" id="tournament-list">
-            <% upNextTournaments.forEach((t, idx) => { %>
+            <% upcomingTournaments.forEach((t, idx) => { %>
               <li class="list-group-item tournament-item highlight-upnext<%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>" data-included="<%= t.included %>" data-idx="u-<%= idx %>">
                 <div class="ti-row d-flex align-items-center">
                   <div class="ti-main flex-grow-1">
