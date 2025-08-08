@@ -1,13 +1,19 @@
 <% if (selectedGame && tiers && tiers.length) { %>
-  <ul class="nav nav-pills mb-3">
-    <li class="nav-item">
-      <a class="nav-link <%= !selectedTier ? 'active' : '' %>" href="/?game=<%= selectedGame %>">All Tiers</a>
-    </li>
-    <% tiers.forEach(tier => { %>
-      <li class="nav-item">
-        <a class="nav-link <%= selectedTier == tier.id ? 'active' : '' %>" href="/?game=<%= selectedGame %>&tier=<%= tier.id %>"><%= tier.url.split('/').pop() %></a>
-      </li>
-    <% }) %>
-  </ul>
+  <nav class="subnav">
+    <div class="container">
+      <ul class="nav subnav-pills" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a class="nav-link <%= !selectedTier ? 'active' : '' %>" href="/?game=<%= selectedGame %>">All Tiers</a>
+        </li>
+        <% tiers.forEach(tier => { %>
+          <li class="nav-item" role="presentation">
+            <a class="nav-link <%= selectedTier == tier.id ? 'active' : '' %>" href="/?game=<%= selectedGame %>&tier=<%= tier.id %>">
+              <%= tier.url.split('/').pop().replaceAll('_Tournaments', '').replaceAll('_Events', '').replaceAll('_', ' ') %>
+            </a>
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+  </nav>
 <% } %>
 
