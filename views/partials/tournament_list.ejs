@@ -16,7 +16,8 @@
                 <div class="ti-row d-flex align-items-center">
                   <div class="ti-main flex-grow-1">
                     <div class="ti-name">
-                        <a class="brand-accent"  href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
+                      <% if (!selectedGame && t.game_name) { %><span class="badge game-badge" style="text-transform: capitalize"><%= t.game_name %></span><% } %>
+                      <a class="brand-accent"  href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
                     </div>
                     <div class="ti-meta"><span><%= t.start_date %></span><span class="sep">–</span><span><%= t.end_date %></span></div>
                   </div>
@@ -39,7 +40,8 @@
                 <div class="ti-row d-flex align-items-center">
                   <div class="ti-main flex-grow-1">
                     <div class="ti-name">
-                        <a class="brand-accent"  href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
+                      <% if (!selectedGame && t.game_name) { %><span class="badge game-badge" style="text-transform: capitalize"><%= t.game_name %></span><% } %>
+                      <a class="brand-accent"  href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
                     </div>
                     <div class="ti-meta">
                       <% if (t.eta) { %><span class="badge bg-info text-dark"><%= t.eta %></span><% } %>
@@ -66,7 +68,8 @@
                 <div class="ti-row d-flex align-items-center">
                   <div class="ti-main flex-grow-1">
                     <div class="ti-name">
-                        <a class="brand-accent"  href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
+                      <% if (!selectedGame && t.game_name) { %><span class="badge game-badge" style="text-transform: capitalize"><%= t.game_name %></span><% } %>
+                      <a class="brand-accent"  href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
                     </div>
                     <div class="ti-meta">
                       <% if (t.eta) { %><span class="badge bg-info text-dark"><%= t.eta %></span><% } %>
@@ -100,7 +103,8 @@
                 <div class="ti-row d-flex align-items-center">
                   <div class="ti-main flex-grow-1">
                     <div class="ti-name">
-                        <a class="brand-accent" href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
+                      <% if (!selectedGame && t.game_name) { %><span class="badge game-badge" style="text-transform: capitalize"><%= t.game_name %></span><% } %>
+                      <a class="brand-accent" href="<%= t.url %>" target="_blank" rel="noopener noreferrer"><%= t.name %></a>
                     </div>
                     <div class="ti-meta"><span><%= t.start_date %></span><span class="sep">–</span><span><%= t.end_date %></span></div>
                   </div>
