@@ -6,6 +6,7 @@ const axios = require('axios');
 const db = require('./utils/db');
 const bodyParser = require('body-parser');
 const filterUtils = require('./utils/filter');
+const session = require('express-session');
 require('dotenv').config();
 
 const app = express();
@@ -15,11 +16,33 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-insecure-secret-change-me';
+app.use(session({
+    name: 'est.sid',
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 1000 * 60 * 60 * 8 // 8 hours
+    }
+}));
+
+app.use((req, res, next) => {
+    res.locals.isAdmin = !!req.session?.isAdmin;
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    next();
+});
 
 const SAVED_PAGES_DIR = path.join(__dirname, 'data', 'saved_pages');
 
-// Map month names/abbrevs to numbers (1-12)
 const MONTH_MAP = {
     jan: 1, january: 1,
     feb: 2, february: 2,
@@ -85,7 +108,6 @@ function formatDateRangeUTC(start, end, now = TODAY) {
     }
 }
 
-// Expose to templates, accept Date or 'YYYY-MM-DD' strings
 app.locals.formatDateRange = (s, e) => {
     const toDate = (x) => {
         if (!x) return null;
@@ -257,13 +279,63 @@ function getTierFileName(game, tier) {
     return path.join(SAVED_PAGES_DIR, `${game}_${tier}.html`);
 }
 
+function requireAuth(req, res, next){
+    if (req.session && req.session.isAdmin) return next();
+    if (req.accepts('html')) return res.redirect('/login');
+    return res.status(401).json({ error: 'Unauthorized' });
+}
+
+app.get('/login', (req, res) => {
+    if (req.session?.isAdmin) return res.redirect('/admin');
+    res.render('login');
+});
+
+app.post('/login', (req, res) => {
+    const { password } = req.body || {};
+    const expected = process.env.ADMIN_PASSWORD;
+    if (!expected) return res.status(500).send('Server not configured. Missing ADMIN_PASSWORD.');
+    if (typeof password === 'string' && password.length && password === expected){
+        req.session.isAdmin = true;
+        return res.redirect('/admin');
+    }
+    return res.status(401).render('login', { error: 'Invalid password' });
+});
+
+app.post('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.clearCookie('est.sid');
+        res.redirect('/');
+    });
+});
+
+app.use('/api', requireAuth);
+
+app.get('/admin', requireAuth, async (req, res) => {
+    const games = await db.getGames();
+    const savedPages = await db.getSavedPages();
+    res.render('admin', { games, savedPages });
+});
+
 app.post('/api/submit', async (req, res) => {
     const { url } = req.body;
     if (!url) return res.status(400).json({ error: 'Missing url' });
-    const match = url.match(/liquipedia\.net\/(\w+)\/(\w+)/i);
-    if (!match) return res.status(400).json({ error: 'Invalid Liquipedia URL' });
-    const game = match[1].toLowerCase();
-    const tier = match[2];
+    let parsed;
+    try {
+        parsed = new URL(url);
+    } catch {
+        return res.status(400).json({ error: 'Invalid URL' });
+    }
+    if (!/^https?:$/.test(parsed.protocol)) return res.status(400).json({ error: 'Invalid protocol' });
+    const host = parsed.hostname.toLowerCase();
+    if (!(host === 'liquipedia.net' || host.endsWith('.liquipedia.net'))){
+        return res.status(400).json({ error: 'URL must be a Liquipedia link' });
+    }
+    const parts = parsed.pathname.split('/').filter(Boolean);
+    if (parts.length < 2){
+        return res.status(400).json({ error: 'Liquipedia link must include game and page' });
+    }
+    const game = parts[0].toLowerCase();
+    const tier = parts.slice(1).join('_');
     const filePath = getTierFileName(game, tier);
     let html;
     if (fs.existsSync(filePath)) {
@@ -372,7 +444,6 @@ app.get('/api/saved-pages', (req, res) => {
     });
 });
 
-// Home page: render tournaments, games, tiers, filters, etc.
 app.get('/', async (req, res) => {
     const games = await db.getGames();
     let selectedGame = req.query.game || null;
@@ -382,7 +453,6 @@ app.get('/', async (req, res) => {
     let filters = null;
     const filtersUnfolded = req.query.filters === 'show';
     if (selectedGame) {
-        // Only show tiers for the selected game
         const gameRow = games.find(g => g.name === selectedGame);
         if (gameRow) {
             tiers = await new Promise((resolve, reject) => {
@@ -392,7 +462,6 @@ app.get('/', async (req, res) => {
             });
         }
         if (selectedTier) {
-            // Single tier selected: filter tournaments by tier
             tournaments = await new Promise((resolve, reject) => {
                 db.all('SELECT * FROM tournaments WHERE tier_id = ?', [selectedTier], (err, rows) => {
                     if (err) resolve([]); else resolve(rows);
@@ -406,18 +475,15 @@ app.get('/', async (req, res) => {
             });
             tournaments = filterUtils.filterTournaments(tournaments, filters);
         } else {
-            // All tiers: get all tournaments for this game
             tournaments = await new Promise((resolve, reject) => {
                 db.all('SELECT t.*, r.id as tier_id FROM tournaments t JOIN tiers r ON t.tier_id = r.id WHERE r.game_id = ?', [gameRow.id], (err, rows) => {
                     if (err) resolve([]); else resolve(rows);
                 });
             });
-            // Get all filters for all tiers
             const tierFilters = {};
             for (const tier of tiers) {
                 tierFilters[tier.id] = tier.filter_json ? JSON.parse(tier.filter_json) : { include: [], exclude: [] };
             }
-            // Apply each tournament's tier's filter and DROP excluded ones
             const filtered = [];
             for (const t of tournaments) {
                 const f = tierFilters[t.tier_id] || { include: [], exclude: [] };
@@ -427,7 +493,6 @@ app.get('/', async (req, res) => {
             tournaments = filtered;
         }
     } else {
-        // No game selected: show all tiers and all tournaments (apply per-tier filters like "All tiers")
         tiers = await db.getTiers();
         const allWithTiers = await new Promise((resolve) => {
             db.all('SELECT t.*, r.id as tier_id, r.filter_json, g.name as game_name FROM tournaments t JOIN tiers r ON t.tier_id = r.id JOIN games g ON r.game_id = g.id', [], (err, rows) => {

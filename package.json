@@ -17,6 +17,7 @@
     "cheerio": "^1.1.2",
     "dotenv": "^17.2.1",
     "ejs": "^3.1.10",
+  "express-session": "^1.18.1",
     "express": "^5.1.0",
     "sqlite3": "^5.1.7"
   }

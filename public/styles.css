@@ -45,6 +45,7 @@ html, body {
     font-weight: 700;
     letter-spacing: .02em;
 }
+    footer .invert svg { filter: invert(1); }
 
 .brand-accent {
     background: linear-gradient(90deg, var(--brand), var(--brand-2));
