@@ -18,30 +18,38 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const SAVED_PAGES_DIR = path.join(__dirname, 'data', 'saved_pages');
 
-function parseTournaments(html, year) {
+function parseTournaments(html, currentYear) {
     const $ = cheerio.load(html);
-    const yearHeader = $(`span.mw-headline#${year}`);
-    if (!yearHeader.length) {
-        console.warn(`Tournaments header not found for ${year}`);
-        return [];
-    }
-    const h3 = yearHeader.closest('h3');
-    const gridTable = h3.nextAll('.gridTable').first();
-    if (!gridTable.length) {
-        console.warn(`No .gridTable found after year header for ${year}`);
-        return [];
-    }
+
+    const extractYears = (text) => {
+        if (!text) return [];
+        const matches = text.match(/\b(19\d{2}|20\d{2})\b/g);
+        return matches ? matches.map(Number) : [];
+    };
+
     const tournaments = [];
-    gridTable.find('.gridRow').each((i, el) => {
+    $('.gridRow').each((i, el) => {
         const row = $(el);
         const name = row.find('.gridCell.Tournament.Header a').last().text().trim();
-        const date = row.find('.gridCell.EventDetails.Date.Header').text().trim();
+        const dateText = row.find('.gridCell.EventDetails.Date.Header').text().trim();
         const prize = row.find('.gridCell.EventDetails.Prize.Header').text().trim();
         const location = row.find('.gridCell.EventDetails.Location.Header').text().trim();
-        if (name && date && location) {
-            tournaments.push({ name, date, prizePool: prize || 'N/A', location });
-        }
+
+        if (!name || !dateText) return;
+
+        const years = extractYears(dateText);
+        if (!years.length) return;
+        const maxYear = Math.max(...years);
+        if (maxYear < currentYear) return;
+
+        tournaments.push({
+            name,
+            date: dateText,
+            prizePool: prize || 'N/A',
+            location: location || 'N/A'
+        });
     });
+
     return tournaments;
 }
 
