@@ -15,14 +15,16 @@
 <body>
     <%- include('partials/navbar', { games, selectedGame }) %>
     <%- include('partials/tiers_tabs', { tiers, selectedGame, selectedTier }) %>
-    <div class="container mt-4">
+        <div class="container mt-4">
+                <% if (selectedTier) { %>
+                    <%- include('partials/filters', { filters, selectedTier }) %>
+                <% } %>
         <div class="row">
-            <div class="col-md-8">
-                <%- include('partials/submit_form', { savedPages }) %>
+            <div class="col">
+                                <% if (!selectedGame) { %>
+                                    <%- include('partials/submit_form', { savedPages }) %>
+                                <% } %>
                 <%- include('partials/tournament_list', { tournaments }) %>
-            </div>
-            <div class="col-md-4">
-                <%- include('partials/filters', { filters, selectedTier }) %>
             </div>
         </div>
     </div>

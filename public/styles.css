@@ -170,6 +170,12 @@ body{--pad:16px}
   border-bottom:1px solid rgba(255,255,255,.06);
   position:sticky; top:56px; z-index:1030;
 }
+
+/* Filters icon toggle */
+.icon-toggle{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:var(--bg-2);color:var(--fg-1)}
+.icon-toggle:hover{background:#16202c;color:var(--fg-0)}
+.icon-toggle .chevron{transition:transform .2s ease}
+.icon-toggle.open .chevron{transform:rotate(180deg)}
 .subnav .subnav-pills{
   display:flex; gap:.4rem; padding:.65rem 0; margin:0; list-style:none; white-space:nowrap; overflow:auto; scrollbar-width:none;
 }
