@@ -238,6 +238,10 @@ html, body {
 }
 
 /* Badges */
+.badge {
+    font-size: 12px;
+}
+
 .badge.bg-info {
     background: linear-gradient(135deg, var(--brand), var(--brand-2)) !important;
     color: #0b0f14 !important;
