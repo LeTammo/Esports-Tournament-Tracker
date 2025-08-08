@@ -6,6 +6,7 @@ const axios = require('axios');
 const db = require('./utils/db');
 const bodyParser = require('body-parser');
 const filterUtils = require('./utils/filter');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
