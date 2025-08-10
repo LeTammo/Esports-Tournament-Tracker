@@ -194,9 +194,6 @@ function categorizeTournaments(tournaments) {
         let eta = computeETA(start);
         const tt = { ...tournament, _sd: start, _ed: end, eta };
 
-        if (tournament.name == "Trackmania World Tour 2025 - Stage Two: NCSA #2 Official Tournament") {
-            console.log(end.getTime(), TODAY.getTime())
-        }
         if (end.getTime() < TODAY.getTime()) {
             past.push(tt);
         } else if (tt.included && start.getTime() <= TODAY.getTime()) {
