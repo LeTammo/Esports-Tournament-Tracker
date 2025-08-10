@@ -194,9 +194,12 @@ function categorizeTournaments(tournaments) {
         let eta = computeETA(start);
         const tt = { ...tournament, _sd: start, _ed: end, eta };
 
-        if (end.getTime() < TODAY) {
+        if (tournament.name == "Trackmania World Tour 2025 - Stage Two: NCSA #2 Official Tournament") {
+            console.log(end.getTime(), TODAY.getTime())
+        }
+        if (end.getTime() < TODAY.getTime()) {
             past.push(tt);
-        } else if (tt.included && start.getTime() <= TODAY) {
+        } else if (tt.included && start.getTime() <= TODAY.getTime()) {
             current.push(tt);
         } else if (tt.included && start.getTime() <= TODAY.getTime() + 14 * 24 * 60 * 60 * 1000) {
             upcoming.push(tt);
@@ -209,9 +212,15 @@ function categorizeTournaments(tournaments) {
         const bx = b._sd ? b._sd.getTime() : Infinity;
         return ax - bx;
     };
+    const byStartDesc = (a, b) => {
+        const ax = a._sd ? a._sd.getTime() : -Infinity;
+        const bx = b._sd ? b._sd.getTime() : -Infinity;
+        return bx - ax;
+    }
+
     current.sort(byStart);
     upcoming.sort(byStart);
-    past.sort(byStart);
+    past.sort(byStartDesc);
     next.sort(byStart);
     return { current, upcoming, past, next };
 }
