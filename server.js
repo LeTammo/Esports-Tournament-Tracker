@@ -71,41 +71,35 @@ function toISO(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
 //  - "29. March - 05. April 2024" (same year, not current)
 //  - "29. December 2024 - 05. January 2025" (cross-year)
 function formatDateRangeUTC(start, end, now = TODAY) {
-    if (!start && !end) return '';
-    const s = start || end;
-    const e = end || start || start;
-    if (!(s instanceof Date) || isNaN(s)) return '';
-    if (!(e instanceof Date) || isNaN(e)) return '';
+    if (!(start instanceof Date) || isNaN(start)) return '';
+    if (!(end instanceof Date) || isNaN(end)) return '';
 
-    const monthNames = [
-        'Jan','Feb','Mar','Apr','May','Jun',
-        'Jul','Aug','Sep','Oct','Nov','Dec'
-    ];
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun', 'Jul','Aug','Sep','Oct','Nov','Dec'];
+    const formateDay = (n) => String(n).padStart(2, '0');
 
-    const curY = now.getUTCFullYear();
-    const sY = s.getUTCFullYear();
-    const sM = s.getUTCMonth();
-    const sD = s.getUTCDate();
-    const eY = e.getUTCFullYear();
-    const eM = e.getUTCMonth();
-    const eD = e.getUTCDate();
+    const currentYear = now.getUTCFullYear();
+    const startYear = start.getUTCFullYear();
+    const startMonth = monthNames[start.getUTCMonth()];
+    const startDay = formateDay(start.getUTCDate());
+    const endYear = end.getUTCFullYear();
+    const endMonth = monthNames[end.getUTCMonth()];
+    const endDay = formateDay(end.getUTCDate());
 
-    const dd = (n) => String(n).padStart(2, '0');
-    const sDay = dd(sD);
-    const eDay = dd(eD);
-    const sMon = monthNames[sM];
-    const eMon = monthNames[eM];
-
-    if (sY === eY) {
-        const yearSuffix = sY === curY ? '' : ` ${sY}`;
-        if (sM === eM) {
-            return `${sDay}. - ${eDay}. ${sMon}${yearSuffix}`;
-        } else {
-            return `${sDay}. ${sMon} - ${eDay}. ${eMon}${yearSuffix}`;
-        }
-    } else {
-        return `${sDay}. ${sMon} ${sY} - ${eDay}. ${eMon} ${eY}`;
+    if (startYear !== endYear) {
+        return `${startDay}. ${startMonth} ${startYear} - ${endDay}. ${endMonth} ${endYear}`;
     }
+
+    const yearSuffix = startYear === currentYear ? '' : ` ${startYear}`;
+
+    if (startMonth !== endMonth) {
+        return `${startDay}. ${startMonth} - ${endDay}. ${endMonth}${yearSuffix}`;
+    }
+
+    if (startDay !== endDay) {
+        return `${startDay}. - ${endDay}. ${startMonth}${yearSuffix}`;
+    }
+
+    return `${startDay}. ${startMonth}${yearSuffix}`;
 }
 
 app.locals.formatDateRange = (s, e) => {
