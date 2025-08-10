@@ -276,7 +276,7 @@ function parseTournaments(html, currentYear) {
 }
 
 function getTierFileName(game, tier) {
-    return path.join(SAVED_PAGES_DIR, `${game}_${tier}.html`);
+    return path.join(SAVED_PAGES_DIR, `${game.replace(/:/g, '_')}_${tier.replace(/:/g, '_')}.html`);
 }
 
 function requireAuth(req, res, next){
