@@ -58,8 +58,10 @@ const MONTH_MAP = {
     dec: 12, december: 12,
 };
 
-const NOW = new Date();
-const TODAY = new Date(Date.UTC(NOW.getUTCFullYear(), NOW.getUTCMonth(), NOW.getUTCDate()));
+function getTodayUTC() {
+    const now = new Date();
+    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
 
 
 function pad2(n){ return String(n).padStart(2,'0'); }
@@ -70,7 +72,7 @@ function toISO(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
 //  - "29. March - 05. April" (different months, current year)
 //  - "29. March - 05. April 2024" (same year, not current)
 //  - "29. December 2024 - 05. January 2025" (cross-year)
-function formatDateRangeUTC(start, end, now = TODAY) {
+function formatDateRangeUTC(start, end, now = getTodayUTC()) {
     if (!(start instanceof Date) || isNaN(start)) return '';
     if (!(end instanceof Date) || isNaN(end)) return '';
 
@@ -177,7 +179,7 @@ function parseISODateUTC(s) {
     return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
 }
 
-function categorizeTournaments(tournaments) {
+function categorizeTournaments(tournaments, today = getTodayUTC()) {
     const past = [];
     const current = [];
     const upcoming = [];
@@ -185,14 +187,15 @@ function categorizeTournaments(tournaments) {
     for (const tournament of tournaments) {
         const start = parseISODateUTC(tournament.start_date);
         const end = parseISODateUTC(tournament.end_date) || start;
-        let eta = computeETA(start);
+        const endTime = end.getTime() + 24 * 60 * 60 * 1000; // midnight after the end date
+        let eta = computeETA(start, today);
         const tt = { ...tournament, _sd: start, _ed: end, eta };
 
-        if (end.getTime() < TODAY.getTime()) {
+        if (endTime <= today.getTime()) {
             past.push(tt);
-        } else if (tt.included && start.getTime() <= TODAY.getTime()) {
+        } else if (tt.included && start.getTime() <= today.getTime() && today.getTime() < endTime) {
             current.push(tt);
-        } else if (tt.included && start.getTime() <= TODAY.getTime() + 14 * 24 * 60 * 60 * 1000) {
+        } else if (tt.included && start.getTime() <= today.getTime() + 14 * 24 * 60 * 60 * 1000) {
             upcoming.push(tt);
         } else {
             next.push(tt);
@@ -216,9 +219,9 @@ function categorizeTournaments(tournaments) {
     return { current, upcoming, past, next };
 }
 
-function computeETA(start) {
+function computeETA(start, today = getTodayUTC()) {
     let eta = null;
-    const diffMs = start.getTime() - TODAY.getTime();
+    const diffMs = start.getTime() - today.getTime();
     if (diffMs > 0) {
         const days = Math.ceil(diffMs / (24 * 60 * 60 * 1000));
         if (days < 7) eta = `in ${days} day${days === 1 ? '' : 's'}`;
