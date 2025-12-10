@@ -6,12 +6,7 @@
         <% if (!hastTournaments) { %>
             <div class="text-muted">No tournaments found for this selection.</div>
             <% } else { %>
-                <% const categoryConfigs=[ { title: 'Currently live' , titleClass: 'text-success' , prefix: 'c' , list:
-                    currentTournaments, itemExtraClass: 'highlight-current' , showEta: false }, { title: 'Upcoming' ,
-                    titleClass: 'text-info' , prefix: 'u' , list: upcomingTournaments,
-                    itemExtraClass: 'highlight-upnext' , showEta: true }, { title: 'Next up' ,
-                    titleClass: 'text-primary' , prefix: 'n' , list: nextTournaments, itemExtraClass: '' , showEta: true
-                    } ]; categoryConfigs.forEach(cfg=> {
+                <% sectionConfigs.forEach(cfg=> {
                     const arr = cfg.list;
                     if (arr && arr.length) { %>
                     <div class="category-block mb-3">
@@ -19,15 +14,13 @@
                             <%= cfg.title %>
                         </div>
                         <ul class="list-group clean-list" id="tournament-list">
-                            <% arr.forEach((t, idx)=> { %>
-                                <%- include('tournament_item', { t, idx, prefix: cfg.prefix, itemExtraClass:
-                                    cfg.itemExtraClass, showEta: cfg.showEta, selectedGame, filters, formatDateRange })
-                                    %>
+                            <% arr.forEach((t)=> { %>
+                                <%- include('tournament_item', { t, idx: t.viewData.idx, prefix: cfg.prefix,
+                                    itemExtraClass: cfg.itemExtraClass, selectedGame, filters }) %>
                                     <% }) %>
                         </ul>
                     </div>
                     <% } }); %>
-
                         <% if (pastTournaments && pastTournaments.length) { %>
                             <div class="category-block">
                                 <div class="d-flex align-items-center justify-content-between">
@@ -42,10 +35,9 @@
                                     </button>
                                 </div>
                                 <ul class="list-group clean-list d-none" id="past-list">
-                                    <% pastTournaments.forEach((t, idx)=> { %>
-                                        <%- include('tournament_item', { t, idx, prefix: 'p' ,
-                                            itemExtraClass: 'past-item' , showEta: false, selectedGame, filters,
-                                            formatDateRange }) %>
+                                    <% pastTournaments.forEach((t)=> { %>
+                                        <%- include('tournament_item', { t, idx: t.viewData.idx, prefix: 'p' ,
+                                            itemExtraClass: 'past-item' , selectedGame, filters }) %>
                                             <% }) %>
                                 </ul>
                                 <script>

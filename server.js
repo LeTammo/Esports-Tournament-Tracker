@@ -6,6 +6,7 @@ const axios = require('axios');
 const db = require('./utils/db');
 const bodyParser = require('body-parser');
 const filterUtils = require('./utils/filter');
+const presenter = require('./utils/presenter');
 const session = require('express-session');
 require('dotenv').config();
 
@@ -512,14 +513,28 @@ app.get('/', async (req, res) => {
     }
     const savedPages = await db.getSavedPages();
     const { current, upcoming, past, next } = categorizeTournaments(tournaments);
+
+    // Format for view
+    const fmt = (list, prefix) => list.map((t, idx) => {
+        const ft = presenter.formatTournament(t, prefix, app.locals.formatDateRange);
+        // We need to inject the idx for the data attribute if used
+        ft.viewData.idx = `${prefix}-${idx}`;
+        return ft;
+    });
+
+    const currentFormatted = fmt(current, 'c');
+    const upcomingFormatted = fmt(upcoming, 'u');
+    const nextFormatted = fmt(next, 'n');
+    const pastFormatted = fmt(past, 'p');
+
+    const sectionConfigs = presenter.getSectionConfigs(currentFormatted, upcomingFormatted, nextFormatted, pastFormatted);
+
     res.render('index', {
         games,
         tiers,
-        tournaments,
-        currentTournaments: current,
-        upcomingTournaments: upcoming,
-        pastTournaments: past,
-        nextTournaments: next,
+        // tournaments: tournaments, // Raw list not really needed by view anymore if we use sections
+        sectionConfigs,
+        pastTournaments: pastFormatted, // Past is treated separately in the view currently
         hastTournaments: current.length > 0 || upcoming.length > 0 || past.length > 0 || next.length > 0,
         savedPages,
         selectedGame,

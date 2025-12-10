@@ -1,74 +1,53 @@
 <li class="list-group-item tournament-item <%= itemExtraClass || '' %>
     <%= t.included === false && filters && (filters.include.length || filters.exclude.length) ? ' filtered d-none' : '' %>"
-    data-included="<%= t.included %>" data-idx="<%= prefix %>-<%= idx %>" style="position: relative;">
+    data-included="<%= t.included %>" data-idx="<%= idx %>" style="position: relative;">
 
     <div class="ti-row d-flex align-items-center">
         <!-- Date Badge -->
-        <% let dateBadge={ month: '???' , day: '?' }; const sd=t._sd || t.start_date; if (sd) { const d=new Date(sd); if
-            (!isNaN(d)) { const monthNames=['Jan', 'Feb' , 'Mar' , 'Apr' , 'May' , 'Jun' , 'Jul' , 'Aug' , 'Sep' , 'Oct'
-            , 'Nov' , 'Dec' ]; dateBadge.month=monthNames[d.getUTCMonth()]; dateBadge.day=d.getUTCDate(); } } %>
-            <div class="date-badge flex-shrink-0">
-                <span class="month">
-                    <%= dateBadge.month %>
-                </span>
-                <span class="day">
-                    <%= dateBadge.day %>
-                </span>
+        <div class="date-badge flex-shrink-0">
+            <span class="month">
+                <%= t.viewData.dateBadge.month %>
+            </span>
+            <span class="day">
+                <%= t.viewData.dateBadge.day %>
+            </span>
+        </div>
+
+        <!-- Main Content -->
+        <div class="ti-main flex-grow-1 min-w-0 ms-2">
+            <div class="ti-name text-truncate mb-1">
+                <% if (t.viewData.isLive) { %>
+                    <span class="live-indicator" title="Live Now"></span>
+                    <% } %>
+                        <a class="text-reset text-decoration-none stretched-link fw-bold" href="<%= t.url %>"
+                            target="_blank" rel="noopener noreferrer">
+                            <%= t.viewData.displayName %>
+                        </a>
             </div>
 
-            <!-- Main Content -->
-            <div class="ti-main flex-grow-1 min-w-0 ms-2">
-                <% const escapeRegex=s=> (s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const stripGameFromName = (name, game) => {
-                    if (!name) return '';
-                    if (!game) return name;
-                    const g = String(game).trim();
-                    let n = String(name).trim();
+            <div class="ti-meta text-muted small text-truncate">
+                <span class="me-2 text-white-50" style="text-transform: capitalize">
+                    <%= t.game_name %>
+                </span>
+                <% if (t.viewData.showEta && t.eta) { %>
+                    <span class="me-2 text-info">• <%= t.eta %></span>
+                    <% } %>
 
-                    const lead = new RegExp('^\\s*' + escapeRegex(g) + '\\s*[:\\-–—\\|]\\s*', 'i');
-                    n = n.replace(lead, '');
+                        <span class="me-2">• <%= t.viewData.dateRange %></span>
 
-                    const dup = new RegExp('^\\s*' + escapeRegex(g) + '\\s+', 'i');
-                    n = n.replace(dup, '');
-
-                    return n;
-                    };
-                    const dn = stripGameFromName(t.name, t.game_name);
-                    const displayName = dn && dn.trim().length ? dn : t.name;
-
-                    const isLive = prefix === 'c'; // 'c' prefix used for current/live tournaments
-                    %>
-
-                    <div class="ti-name text-truncate mb-1">
-                        <% if (isLive) { %>
-                            <span class="live-indicator" title="Live Now"></span>
+                        <% if (t.viewData.hasLocation) { %>
+                            <span class="me-2">• <%= t.location %></span>
                             <% } %>
-                                <a class="text-reset text-decoration-none stretched-link fw-bold" href="<%= t.url %>"
-                                    target="_blank" rel="noopener noreferrer">
-                                    <%= displayName %>
-                                </a>
-                    </div>
-
-                    <div class="ti-meta text-muted small text-truncate">
-                        <span class="me-2 text-white-50" style="text-transform: capitalize">
-                            <%= t.game_name %>
-                        </span>
-                        <% if (showEta && t.eta) { %>
-                            <span class="me-2 text-info">• <%= t.eta %></span>
-                            <% } %>
-                                <% if (t.location && t.location !=='N/A' ) { %>
-                                    <span class="me-2">• <%= t.location %></span>
-                                    <% } %>
-                    </div>
             </div>
+        </div>
 
-            <!-- Prize Pool -->
-            <% if (t.prizePool && t.prizePool !=='N/A' ) { %>
-                <div class="ti-prize flex-shrink-0 ms-3 d-none d-sm-block">
-                    <span class="prize-pool">
-                        <%= t.prizePool %>
-                    </span>
-                </div>
-                <% } %>
+        <!-- Prize Pool -->
+        <% if (t.viewData.hasPrize) { %>
+            <div class="ti-prize flex-shrink-0 ms-3 d-none d-sm-block">
+                <span class="prize-pool">
+                    <%= t.prizePool %>
+                </span>
+            </div>
+            <% } %>
     </div>
 </li>
