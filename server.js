@@ -64,8 +64,8 @@ function getTodayUTC() {
 }
 
 
-function pad2(n){ return String(n).padStart(2,'0'); }
-function toISO(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
+function pad2(n) { return String(n).padStart(2, '0'); }
+function toISO(y, m, d) { return `${y}-${pad2(m)}-${pad2(d)}`; }
 
 // Format a UTC date range like:
 //  - "15. - 19. May" (same month, current year)
@@ -76,7 +76,7 @@ function formatDateRangeUTC(start, end, now = getTodayUTC()) {
     if (!(start instanceof Date) || isNaN(start)) return '';
     if (!(end instanceof Date) || isNaN(end)) return '';
 
-    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun', 'Jul','Aug','Sep','Oct','Nov','Dec'];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const formateDay = (n) => String(n).padStart(2, '0');
 
     const currentYear = now.getUTCFullYear();
@@ -110,7 +110,7 @@ app.locals.formatDateRange = (s, e) => {
         if (x instanceof Date) return x;
         if (typeof x === 'string') {
             const m = x.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-            if (m) return new Date(Date.UTC(+m[1], +m[2]-1, +m[3]));
+            if (m) return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
         }
         return null;
     };
@@ -119,54 +119,54 @@ app.locals.formatDateRange = (s, e) => {
 
 // Parse Liquipedia date strings like:
 // "Jan 23 - 26, 2025" | "Jan 29 - Feb 09, 2025" | "Jul 28, 2025"
-function parseLiquipediaDateRange(dateText){
+function parseLiquipediaDateRange(dateText) {
     if (!dateText) return { startISO: null, endISO: null };
-    const s = String(dateText).replace(/[\u2013\u2014]/g,'-').replace(/\s+/g,' ').trim();
+    const s = String(dateText).replace(/[\u2013\u2014]/g, '-').replace(/\s+/g, ' ').trim();
     // Explicit cross-year or same-year range with years on both sides:
     // e.g., "Dec 4, 2024 - May 15, 2025" or "Jan 3, 2025 - Jan 10, 2025"
     let m = s.match(/^([A-Za-z]{3,})\s+(\d{1,2}),\s*(\d{4})\s*-\s*([A-Za-z]{3,})\s+(\d{1,2}),\s*(\d{4})$/);
-    if (m){
+    if (m) {
         const m1 = MONTH_MAP[m[1].toLowerCase()];
-        const d1 = parseInt(m[2],10);
-        const y1 = parseInt(m[3],10);
+        const d1 = parseInt(m[2], 10);
+        const y1 = parseInt(m[3], 10);
         const m2 = MONTH_MAP[m[4].toLowerCase()];
-        const d2 = parseInt(m[5],10);
-        const y2 = parseInt(m[6],10);
-        if (m1 && m2 && d1 && d2 && y1 && y2){
-            return { startISO: toISO(y1,m1,d1), endISO: toISO(y2,m2,d2) };
+        const d2 = parseInt(m[5], 10);
+        const y2 = parseInt(m[6], 10);
+        if (m1 && m2 && d1 && d2 && y1 && y2) {
+            return { startISO: toISO(y1, m1, d1), endISO: toISO(y2, m2, d2) };
         }
     }
     // Range with optional 2nd month
     m = s.match(/^([A-Za-z]{3,})\s+(\d{1,2})\s*-\s*([A-Za-z]{3,})?\s*(\d{1,2}),\s*(\d{4})$/);
-    if (m){
+    if (m) {
         const m1 = MONTH_MAP[m[1].toLowerCase()];
-        const d1 = parseInt(m[2],10);
+        const d1 = parseInt(m[2], 10);
         const mon2 = m[3] ? m[3].toLowerCase() : m[1].toLowerCase();
         const m2 = MONTH_MAP[mon2];
-        const d2 = parseInt(m[4],10);
-        const y = parseInt(m[5],10);
-        if (m1 && m2 && d1 && d2 && y){
-            return { startISO: toISO(y,m1,d1), endISO: toISO(y,m2,d2) };
+        const d2 = parseInt(m[4], 10);
+        const y = parseInt(m[5], 10);
+        if (m1 && m2 && d1 && d2 && y) {
+            return { startISO: toISO(y, m1, d1), endISO: toISO(y, m2, d2) };
         }
     }
     // Single date
     m = s.match(/^([A-Za-z]{3,})\s+(\d{1,2}),\s*(\d{4})$/);
-    if (m){
+    if (m) {
         const mm = MONTH_MAP[m[1].toLowerCase()];
-        const d = parseInt(m[2],10);
-        const y = parseInt(m[3],10);
-        if (mm && d && y){
-            const iso = toISO(y,mm,d);
+        const d = parseInt(m[2], 10);
+        const y = parseInt(m[3], 10);
+        if (mm && d && y) {
+            const iso = toISO(y, mm, d);
             return { startISO: iso, endISO: iso };
         }
     }
     // Fallback: try native Date
     const nd = new Date(s);
-    if (!isNaN(nd)){
+    if (!isNaN(nd)) {
         const y = nd.getFullYear();
-        const mm = nd.getMonth()+1;
+        const mm = nd.getMonth() + 1;
         const d = nd.getDate();
-        const iso = toISO(y,mm,d);
+        const iso = toISO(y, mm, d);
         return { startISO: iso, endISO: iso };
     }
     return { startISO: null, endISO: null };
@@ -248,10 +248,10 @@ function parseTournaments(html, currentYear) {
     const tournaments = [];
     $('.gridRow').each((i, el) => {
         const row = $(el);
-    const titleCell = row.find('.gridCell.Tournament.Header');
-    const name = titleCell.find('a').last().text().trim();
-    const href = titleCell.find('a').last().attr('href');
-    const fullUrl = href ? (href.startsWith('http') ? href : `https://liquipedia.net${href}`) : null;
+        const titleCell = row.find('.gridCell.Tournament.Header');
+        const name = titleCell.find('a').last().text().trim();
+        const href = titleCell.find('a').last().attr('href');
+        const fullUrl = href ? (href.startsWith('http') ? href : `https://liquipedia.net${href}`) : null;
         const dateText = row.find('.gridCell.EventDetails.Date.Header').text().trim();
         const prize = row.find('.gridCell.EventDetails.Prize.Header').text().trim();
         const location = row.find('.gridCell.EventDetails.Location.Header').text().trim();
@@ -282,7 +282,7 @@ function getTierFileName(game, tier) {
     return path.join(SAVED_PAGES_DIR, `${game.replace(/:/g, '_')}_${tier.replace(/:/g, '_')}.html`);
 }
 
-function requireAuth(req, res, next){
+function requireAuth(req, res, next) {
     if (req.session && req.session.isAdmin) return next();
     if (req.accepts('html')) return res.redirect('/login');
     return res.status(401).json({ error: 'Unauthorized' });
@@ -297,7 +297,7 @@ app.post('/login', (req, res) => {
     const { password } = req.body || {};
     const expected = process.env.ADMIN_PASSWORD;
     if (!expected) return res.status(500).send('Server not configured. Missing ADMIN_PASSWORD.');
-    if (typeof password === 'string' && password.length && password === expected){
+    if (typeof password === 'string' && password.length && password === expected) {
         req.session.isAdmin = true;
         return res.redirect('/admin');
     }
@@ -330,11 +330,11 @@ app.post('/api/submit', async (req, res) => {
     }
     if (!/^https?:$/.test(parsed.protocol)) return res.status(400).json({ error: 'Invalid protocol' });
     const host = parsed.hostname.toLowerCase();
-    if (!(host === 'liquipedia.net' || host.endsWith('.liquipedia.net'))){
+    if (!(host === 'liquipedia.net' || host.endsWith('.liquipedia.net'))) {
         return res.status(400).json({ error: 'URL must be a Liquipedia link' });
     }
     const parts = parsed.pathname.split('/').filter(Boolean);
-    if (parts.length < 2){
+    if (parts.length < 2) {
         return res.status(400).json({ error: 'Liquipedia link must include game and page' });
     }
     const game = parts[0].toLowerCase();

@@ -5,85 +5,72 @@
         </div>
         <% if (!hastTournaments) { %>
             <div class="text-muted">No tournaments found for this selection.</div>
-        <% } else { %>
-            <%
-                const categoryConfigs = [
-                    { title: 'Currently live', titleClass: 'text-success', prefix: 'c', list: currentTournaments, itemExtraClass: 'highlight-current', showEta: false },
-                    { title: 'Upcoming',       titleClass: 'text-info',    prefix: 'u', list: upcomingTournaments, itemExtraClass: 'highlight-upnext', showEta: true },
-                    { title: 'Next up',        titleClass: 'text-primary', prefix: 'n', list: nextTournaments, itemExtraClass: '', showEta: true }
-                ];
-                categoryConfigs.forEach(cfg => {
+            <% } else { %>
+                <% const categoryConfigs=[ { title: 'Currently live' , titleClass: 'text-success' , prefix: 'c' , list:
+                    currentTournaments, itemExtraClass: 'highlight-current' , showEta: false }, { title: 'Upcoming' ,
+                    titleClass: 'text-info' , prefix: 'u' , list: upcomingTournaments,
+                    itemExtraClass: 'highlight-upnext' , showEta: true }, { title: 'Next up' ,
+                    titleClass: 'text-primary' , prefix: 'n' , list: nextTournaments, itemExtraClass: '' , showEta: true
+                    } ]; categoryConfigs.forEach(cfg=> {
                     const arr = cfg.list;
                     if (arr && arr.length) { %>
-                <div class="category-block mb-3">
-                    <div class="category-title <%= cfg.titleClass %>"><%= cfg.title %></div>
-                    <ul class="list-group clean-list" id="tournament-list">
-                        <% arr.forEach((t, idx) => { %>
-                            <%- include('tournament_item', {
-                                t,
-                                idx,
-                                prefix: cfg.prefix,
-                                itemExtraClass: cfg.itemExtraClass,
-                                showEta: cfg.showEta,
-                                selectedGame,
-                                filters,
-                                formatDateRange
-                            }) %>
-                        <% }) %>
-                    </ul>
-                </div>
-            <% } }); %>
-
-            <% if (pastTournaments && pastTournaments.length) { %>
-                <div class="category-block">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="category-title text-muted">Past tournaments</div>
-                        <button class="icon-toggle" type="button" id="toggle-past" aria-expanded="false"
-                                aria-controls="past-list" title="Toggle past" aria-label="Toggle past">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                 xmlns="http://www.w3.org/2000/svg" class="chevron">
-                                <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
+                    <div class="category-block mb-3">
+                        <div class="category-title <%= cfg.titleClass %>">
+                            <%= cfg.title %>
+                        </div>
+                        <ul class="list-group clean-list" id="tournament-list">
+                            <% arr.forEach((t, idx)=> { %>
+                                <%- include('tournament_item', { t, idx, prefix: cfg.prefix, itemExtraClass:
+                                    cfg.itemExtraClass, showEta: cfg.showEta, selectedGame, filters, formatDateRange })
+                                    %>
+                                    <% }) %>
+                        </ul>
                     </div>
-                    <ul class="list-group clean-list d-none" id="past-list">
-                        <% pastTournaments.forEach((t, idx) => { %>
-                            <%- include('tournament_item', {
-                                t,
-                                idx,
-                                prefix: 'p',
-                                itemExtraClass: 'past-item',
-                                showEta: false,
-                                selectedGame,
-                                filters,
-                                formatDateRange
-                            }) %>
-                        <% }) %>
-                    </ul>
-                    <script>
-                        (function () {
-                            document.addEventListener('DOMContentLoaded', function () {
-                                var btn = document.getElementById('toggle-past');
-                                var list = document.getElementById('past-list');
-                                if (!btn || !list) return;
-                                btn.addEventListener('click', function () {
-                                    var willShow = list.classList.contains('d-none');
-                                    if (willShow) {
-                                        list.classList.remove('d-none');
-                                        btn.classList.add('open');
-                                        btn.setAttribute('aria-expanded', 'true');
-                                    } else {
-                                        list.classList.add('d-none');
-                                        btn.classList.remove('open');
-                                        btn.setAttribute('aria-expanded', 'false');
-                                    }
-                                });
-                            });
-                        })();
-                    </script>
-                </div>
-            <% } %>
-        <% } %>
+                    <% } }); %>
+
+                        <% if (pastTournaments && pastTournaments.length) { %>
+                            <div class="category-block">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="category-title text-muted">Past tournaments</div>
+                                    <button class="icon-toggle" type="button" id="toggle-past" aria-expanded="false"
+                                        aria-controls="past-list" title="Toggle past" aria-label="Toggle past">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg" class="chevron">
+                                            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <ul class="list-group clean-list d-none" id="past-list">
+                                    <% pastTournaments.forEach((t, idx)=> { %>
+                                        <%- include('tournament_item', { t, idx, prefix: 'p' ,
+                                            itemExtraClass: 'past-item' , showEta: false, selectedGame, filters,
+                                            formatDateRange }) %>
+                                            <% }) %>
+                                </ul>
+                                <script>
+                                    (function () {
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            var btn = document.getElementById('toggle-past');
+                                            var list = document.getElementById('past-list');
+                                            if (!btn || !list) return;
+                                            btn.addEventListener('click', function () {
+                                                var willShow = list.classList.contains('d-none');
+                                                if (willShow) {
+                                                    list.classList.remove('d-none');
+                                                    btn.classList.add('open');
+                                                    btn.setAttribute('aria-expanded', 'true');
+                                                } else {
+                                                    list.classList.add('d-none');
+                                                    btn.classList.remove('open');
+                                                    btn.setAttribute('aria-expanded', 'false');
+                                                }
+                                            });
+                                        });
+                                    })();
+                                </script>
+                            </div>
+                            <% } %>
+                                <% } %>
     </div>
 </div>
-
