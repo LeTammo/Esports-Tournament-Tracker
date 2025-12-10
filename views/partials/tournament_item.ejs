@@ -26,17 +26,25 @@
             </div>
 
             <div class="ti-meta text-muted small text-truncate">
-                <span class="me-2 text-white-50" style="text-transform: capitalize">
-                    <%= t.game_name %>
-                </span>
-                <% if (t.viewData.showEta && t.eta) { %>
-                    <span class="me-2 text-info">• <%= t.eta %></span>
+                <% if (t.game_name) { %>
+                    <span class="text-white-50" style="text-transform: capitalize">
+                        <%= t.game_name %>
+                    </span>
+                    <span class="mx-1">•</span>
                     <% } %>
-
-                        <span class="me-2">• <%= t.viewData.dateRange %></span>
+                        <span class="text-info">
+                            <%= t.viewData.eta %>
+                        </span>
+                        <span class="mx-1">•</span>
+                        <span>
+                            <%= t.viewData.dateRange %>
+                        </span>
 
                         <% if (t.viewData.hasLocation) { %>
-                            <span class="me-2">• <%= t.location %></span>
+                            <span class="mx-1">•</span>
+                            <span>
+                                <%= t.location %>
+                            </span>
                             <% } %>
             </div>
         </div>

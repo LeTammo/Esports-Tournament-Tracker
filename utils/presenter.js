@@ -35,6 +35,7 @@ function formatTournament(t, prefix, formatDateRange) {
     const dn = stripGameFromName(t.name, t.game_name);
     const displayName = dn && dn.trim().length ? dn : t.name;
     const isLive = prefix === 'c';
+    const eta = prefix === 'u' || prefix === 'n' ? t.eta : 'Currently live';
 
     return {
         ...t,
@@ -42,11 +43,11 @@ function formatTournament(t, prefix, formatDateRange) {
             displayName,
             dateBadge: formatDateBadge(t._sd || t.start_date),
             isLive,
-            dateRange: formatDateRange ? formatDateRange(t._sd || t.start_date, t._ed || t.end_date) : '',
+            dateRange: formatDateRange ? formatDateRange(t._sd || t.start_date, t._ed || t.end_date) : 'Currently live',
             hasPrize: t.prizePool && t.prizePool !== 'N/A',
             hasLocation: t.location && t.location !== 'N/A',
-            showEta: prefix === 'u' || prefix === 'n',
-            idx: `${prefix}-${Math.random().toString(36).substr(2, 5)}` // simplified unique ID or pass index from loop
+            eta,
+            idx: `${prefix}-${Math.random().toString(36).substr(2, 5)}`
         }
     };
 }
